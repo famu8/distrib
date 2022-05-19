@@ -249,11 +249,20 @@ function login(codAcc){
     }
     return null;
 }
-
-
-function listadoVariables(){
-    return variables;
+function datosMedico(idMedico){
+    var datosMed=[];
+    for(var i=0; i<medicos.length;i++){
+        //aqui antes era medicos[i].id==pacientes[i].medicoID
+        if(idMedico==pacientes[i].medicoID){
+            datosMed.push(medicos[i].id);
+            datosMed.push(medicos[i].nombre);
+            //console.log(datosMed);
+            return datosMed;
+        }
+    }
+    return null;
 }
+
 
 function listadoMuestras(idPaciente){
     var muestraActual=[];
@@ -268,20 +277,6 @@ function listadoMuestras(idPaciente){
     return muestraActual;
 }
 
-
-function datosMedico(idMedico){
-    var datosMed=[];
-    for(var i=0; i<medicos.length;i++){
-        //aqui antes era medicos[i].id==pacientes[i].medicoID
-        if(idMedico==pacientes[i].medicoID){
-            datosMed.push(medicos[i].id);
-            datosMed.push(medicos[i].nombre);
-            //console.log(datosMed);
-            return datosMed;
-        }
-    }
-    return null;
-}
 
 function agregarMuestra(idPaciente, idVariable,fecha,valor){
     //si me envian algo diferente devuelve 0
@@ -308,6 +303,10 @@ function eliminarMuestra(idValor){
 
 }
 
+function listadoVariables(){
+    return variables;
+}
+
 var servidor = rpc.server();
 var app = servidor.createApp("MiGestionPacientes");
 
@@ -318,60 +317,37 @@ app.register(datosMedico);
 app.register(agregarMuestra);
 app.register(eliminarMuestra);
 //funciones creadas por mi para la parte 3: 
-app.register(getPacientes);
-app.register(getAllPacs);
 app.register(getAllMuestras);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//devolver los pacientes con el mismo medico
-//creo que no me hace falta
-function getPacientes(idMedico){
-    //creo este array dentro para que cada vez que se invoque esta funcion se actualice
-    var pacientesMedico = [];
-    //console.log("ID del medico actual: ",idMedico);
-    //console.log("ID del paciente actual:", idPaciente);
-    for(var i=0; i < pacientes.length;i++){
-        //depues del && --> esto lo aho para NO PODER COMPARTIR la muestra el paciente consigo mismo
-        //NO mando el paciente que va a compartir (no lo mando asi mismo)
-        if(idMedico==pacientes[i].medicoID && idPaciente!=pacientes[i].id){
-            pacientesMedico.push(pacientes[i]);
-            //console.log(pacientesMedico);
-        }
-    }
-    //le deuvelvo todos los pacientes asociados a ese medico
-    return pacientesMedico;
-}
-//devolver todos los pacientes de la bbdd
-function getAllPacs(){
-    return pacientes;
-}
 function getAllMuestras(){
     return muestras;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////
 ///////PARTE DEL WEBSOCKET////////////////////////////
 // Crear un servidor HTTP
@@ -388,7 +364,6 @@ httpServer.listen(puerto, function () {
 	console.log("Servidor de WebSocket iniciado en puerto:", puerto);
 });
 //var pacientesFiltrados=getPacientes(idMedicoGlobal);
-var pacientesAll=getAllPacs();
 //console.log(pacientesProfe); // array de pacientes
 var conexiones = []; //array conexiones
 
@@ -420,7 +395,7 @@ wsServer.on("request", function (request) {
                         console.log("ID PACIENTE:", connection.id);
                         console.log("SOY UN:", connection.rolServer);
                         //le asigno a esa conexion el rol de paciente
-                        connection.sendUTF(JSON.stringify({operacion:"filtrarPacs",pacientesTodos:pacientesAll}));
+                        connection.sendUTF(JSON.stringify({operacion:"filtrarPacs",pacientesTodos:pacientes}));
                     }else{
                         connection.rolServer=msg.rol;
                         connection.nombre=msg.nombre;
@@ -440,7 +415,7 @@ wsServer.on("request", function (request) {
                             for(var i=0; i<conexiones.length;i++){
                                 //si el rol ser medico y si el id de la conexion es igual al id del medico del array de pacientes
                                 //envia la info 
-                                if(conexiones[i].rolServer=="medico" && conexiones[i].id==pacientes[i].medicoID){
+                                if(conexiones[i].rolServer=="medico" && conexiones[i].id==msg.idMedico){
                                     console.log("Esta es la muestra: ",msg.muestra);
                                     // se pone msg.muestra.variable-1 porque el array busca por posicion y no por id 
                                     // porque sé que el orden de id=1,2,3.... 

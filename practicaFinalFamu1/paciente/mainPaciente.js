@@ -8,8 +8,6 @@ var datosMedico = app.procedure("datosMedico");
 var listadoMuestras = app.procedure("listadoMuestras");
 var agregarMuestra =app.procedure("agregarMuestra");
 var eliminarMuestra=app.procedure("eliminarMuestra");
-var getPacientes = app.procedure("getPacientes");
-var getAllPacs =app.procedure("getAllPacs");
 var getAllMuestras =app.procedure("getAllMuestras");
 
 //variables globales
@@ -291,7 +289,7 @@ function enviar(){
         case "-1": //medico
         //le envio el nombre global del paciente para mostrarlo en el alert del medico
             conexion.send(JSON.stringify({operacion: "enviar",
-            valorSelect: selectValue, muestra:muestraACompartir,rol:"medico", nombre:pacienteGlobal.nombre}));
+            valorSelect: selectValue, muestra:muestraACompartir,rol:"medico", nombre:pacienteGlobal.nombre,idMedico:idMedico}));
             break;
         case "-2": //todos
             conexion.send(JSON.stringify({operacion: "enviar",

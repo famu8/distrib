@@ -9,7 +9,7 @@ var pacientes = [
     {id:2, nombre:"JUANJO",fecha_nacim:"2022-04-18",genero:"M",medicoID:1, codigo_acceso:"b",observaciones:"ANEMIA"},
     {id:3, nombre:"GINES",fecha_nacim:"2022-04-18",genero:"M",medicoID:3, codigo_acceso:"c",observaciones:"ok"},
     {id:4, nombre:"ENRIQUE",fecha_nacim:"2022-04-18",genero:"M",medicoID:1, codigo_acceso:"d",observaciones:"ok"},
-    {id:5, nombre:"JUANFRAN",fecha_nacim:"2022-04-18",genero:"M",medicoID:3, codigo_acceso:"ae",observaciones:"ok"}
+    {id:5, nombre:"JUANFRAN",fecha_nacim:"2022-04-18",genero:"M",medicoID:3, codigo_acceso:"e",observaciones:"ok"}
 ];
 var variables=[
     {id:1,nombre:"peso"},
@@ -46,7 +46,7 @@ var muestras=[
     {idMuestra:18,pacienteID:3,variable:2,fecha:"2022-05-20T16:24",valor:1200},
     {idMuestra:19,pacienteID:3,variable:2,fecha:"2022-05-20T16:24",valor:1400},
     {idMuestra:20,pacienteID:3,variable:2,fecha:"2022-05-20T16:24",valor:3000},
-    {idMuestra:21,pacienteID:3,variable:4,fecha:"2022-05-20T16:24",valor:60}
+    {idMuestra:21,pacienteID:5,variable:4,fecha:"2022-05-20T16:24",valor:60}
 ];
 
 module.exports.pacientes=pacientes;
