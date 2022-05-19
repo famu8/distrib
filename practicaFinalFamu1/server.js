@@ -183,6 +183,7 @@ app.get("/api/paciente/:pacienteglobal/muestras/:listafiltrar",(req,res)=>{
             newMuestra.push(muestras[i])
         }
     }
+    //console.log(newMuestra);
     res.status(200).json(newMuestra);
     return;
    

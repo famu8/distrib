@@ -25,28 +25,28 @@ var variables=[
 //se han puesto todas las muestras con pacienteID=1 porque siempre s ehace login con este paciente 
 //para hacer las pruebas necesarias
 var muestras=[
-    {idMuestra:1,pacienteID:1,variable:1,fecha:"2022-04-18",valor:70},
-    {idMuestra:2,pacienteID:1,variable:1,fecha:"2022-04-18",valor:65},
-    {idMuestra:3,pacienteID:1,variable:1,fecha:"2022-04-18",valor:900000},
-    {idMuestra:4,pacienteID:1,variable:2,fecha:"2022-04-18",valor:1200},
-    {idMuestra:5,pacienteID:1,variable:2,fecha:"2022-04-18",valor:1400},
-    {idMuestra:6,pacienteID:1,variable:3,fecha:"2022-04-18",valor:3000},
-    {idMuestra:7,pacienteID:2,variable:3,fecha:"2022-04-18",valor:60},
-    {idMuestra:8,pacienteID:4,variable:4,fecha:"2022-04-18",valor:1},
-    {idMuestra:9,pacienteID:1,variable:4,fecha:"2022-04-18",valor:1},
-    {idMuestra:10,pacienteID:1,variable:5,fecha:"2022-04-18",valor:1},
-    {idMuestra:11,pacienteID:1,variable:5,fecha:"2022-04-18",valor:1},
-    {idMuestra:12,pacienteID:1,variable:6,fecha:"2022-04-18",valor:1},
-    {idMuestra:13,pacienteID:1,variable:7,fecha:"2022-04-18",valor:1},
-    {idMuestra:14,pacienteID:1,variable:8,fecha:"2022-04-18",valor:1},
+    {idMuestra:1,pacienteID:1,variable:1,fecha:"2022-05-20T16:24",valor:70},
+    {idMuestra:2,pacienteID:1,variable:1,fecha:"2022-05-20T16:24",valor:65},
+    {idMuestra:3,pacienteID:1,variable:1,fecha:"2022-05-20T16:24",valor:900000},
+    {idMuestra:4,pacienteID:1,variable:2,fecha:"2022-05-20T16:24",valor:1200},
+    {idMuestra:5,pacienteID:1,variable:2,fecha:"2022-05-20T16:24",valor:1400},
+    {idMuestra:6,pacienteID:1,variable:3,fecha:"2022-05-20T16:24",valor:3000},
+    {idMuestra:7,pacienteID:2,variable:3,fecha:"2022-05-20T16:24",valor:60},
+    {idMuestra:8,pacienteID:4,variable:4,fecha:"2022-05-20T16:24",valor:1},
+    {idMuestra:9,pacienteID:1,variable:4,fecha:"2022-05-20T16:24",valor:1},
+    {idMuestra:10,pacienteID:1,variable:5,fecha:"2022-05-20T16:24",valor:1},
+    {idMuestra:11,pacienteID:1,variable:5,fecha:"2022-05-20T16:24",valor:1},
+    {idMuestra:12,pacienteID:1,variable:6,fecha:"2022-05-20T16:24",valor:1},
+    {idMuestra:13,pacienteID:1,variable:7,fecha:"2022-05-20T16:24",valor:1},
+    {idMuestra:14,pacienteID:1,variable:8,fecha:"2022-05-20T16:24",valor:1},
 
-    {idMuestra:15,pacienteID:3,variable:1,fecha:"2022-04-18",valor:70},
-    {idMuestra:16,pacienteID:3,variable:1,fecha:"2022-04-18",valor:65},
-    {idMuestra:17,pacienteID:3,variable:1,fecha:"2022-04-18",valor:78},
-    {idMuestra:18,pacienteID:3,variable:2,fecha:"2022-04-18",valor:1200},
-    {idMuestra:19,pacienteID:3,variable:2,fecha:"2022-04-18",valor:1400},
-    {idMuestra:20,pacienteID:3,variable:2,fecha:"2022-04-18",valor:3000},
-    {idMuestra:21,pacienteID:3,variable:4,fecha:"2022-04-18",valor:60}
+    {idMuestra:15,pacienteID:3,variable:1,fecha:"2022-05-20T16:24",valor:70},
+    {idMuestra:16,pacienteID:3,variable:1,fecha:"2022-05-20T16:24",valor:65},
+    {idMuestra:17,pacienteID:3,variable:1,fecha:"2022-05-20T16:24",valor:78},
+    {idMuestra:18,pacienteID:3,variable:2,fecha:"2022-05-20T16:24",valor:1200},
+    {idMuestra:19,pacienteID:3,variable:2,fecha:"2022-05-20T16:24",valor:1400},
+    {idMuestra:20,pacienteID:3,variable:2,fecha:"2022-05-20T16:24",valor:3000},
+    {idMuestra:21,pacienteID:3,variable:4,fecha:"2022-05-20T16:24",valor:60}
 ];
 
 module.exports.pacientes=pacientes;

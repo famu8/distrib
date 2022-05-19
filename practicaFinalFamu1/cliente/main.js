@@ -112,7 +112,7 @@ function imprimirDatosPaciente(id){
          var arrayForPrint=['ID: ', "Nombre: ", "ID del médico: ", "Observaciones: "];
          listaVar.innerHTML = "";    
          for (var i=0; i<arrayDatos.length;i++) {
-            listaVar.innerHTML += "<li>"+arrayForPrint[i]+ " : "+ arrayDatos[i]+"</li><br>";        
+            listaVar.innerHTML += "<li>"+arrayForPrint[i]+ " "+ arrayDatos[i]+"</li><br>";        
          }
          listaVar.innerHTML += '<button onclick="modificarDatos('+id+')">Modificar Datos Paciente</button>' ;
          
@@ -130,18 +130,25 @@ function agregarPaciente(){
         codigoAccesoNuevoPaciente: document.getElementById("codigoAccesoNuevoPaciente").value, 
         obersvacionesNuevoPaciente: document.getElementById("obersvacionesNuevoPaciente").value,               
         };
+    if(nuevoPaciente.nombreNuevoPaciente==""||nuevoPaciente.fechaNacimientoNuevoPaciente==""||
+        nuevoPaciente.generoNuevoPaciente==""||nuevoPaciente.codigoAccesoNuevoPaciente==""
+        ||nuevoPaciente.obersvacionesNuevoPaciente==""){
+        alert("Rellene todos los campos");
+    }else{        
         // console.log(nuevoPaciente);
-    rest.post("/api/medico/"+idMedicoGlobal+"/pacientes", nuevoPaciente, (estado,respuesta) => {
-        if (estado == 201) {
-            //medicoGlobal== id del medico que acutalmente está en el sistema
-            alert("Se ha añadido un nuevo paciente!");
-            mostrarPacientes(idMedicoGlobal); 
-            cambiarSeccion("listado");
-        }else{
-            alert("Error introduciendo nuevo paciente");
-            cambiarSeccion("listado");
-        }
-    });
+        rest.post("/api/medico/"+idMedicoGlobal+"/pacientes", nuevoPaciente, (estado,respuesta) => {
+            if (estado == 201) {
+                //medicoGlobal== id del medico que acutalmente está en el sistema
+                alert("Se ha añadido un nuevo paciente!");
+                mostrarPacientes(idMedicoGlobal); 
+                cambiarSeccion("listado");
+            }else{
+                alert("Error introduciendo nuevo paciente");
+                cambiarSeccion("listado");
+            }
+        });
+    }
+
 
 }
 
@@ -161,24 +168,30 @@ function modificarDatos(id){
         codigoAccesoNuevoPaciente: document.getElementById("codigoAccesoNuevoPaciente2").value, 
         obersvacionesNuevoPaciente: document.getElementById("obersvacionesNuevoPaciente2").value,               
     };
-     console.log("Este es el nuevo paciente: ",nuevoPaciente);
-     rest.put("/api/paciente/"+id , nuevoPaciente, (estado,respuesta) => {
-         //como cuando le envio al servidor los nuevos datos del apc se actualiza sola 
-         //la bbdd no tengo que hacer nada con la respuesta que me envía el servidor.
-        if (estado == 201) {
-            imprimirVariablesPaciente(id);
-            //ponemos el formulario vacio
-            newName.value="";
-            newFecha.value="";
-            newGender.value="";
-            newCod.value="";
-            newObservaciones.value="";
-            alert("Se han modificado los datos del paciente!");
-        }else{
-            alert("Error introduciendo nuevo paciente");   
-        }
-    });
-    imprimirDatosPaciente(id);
+    if(nuevoPaciente.nombreNuevoPaciente==""||nuevoPaciente.fechaNacimientoNuevoPaciente=="" ||
+    nuevoPaciente.generoNuevoPaciente==""||nuevoPaciente.codigoAccesoNuevoPaciente==""||
+    nuevoPaciente.obersvacionesNuevoPaciente==""){
+        alert("Rellene todos los campos");
+    }else{
+        console.log("Este es el nuevo paciente: ",nuevoPaciente);
+        rest.put("/api/paciente/"+id , nuevoPaciente, (estado,respuesta) => {
+            //como cuando le envio al servidor los nuevos datos del apc se actualiza sola 
+            //la bbdd no tengo que hacer nada con la respuesta que me envía el servidor.
+           if (estado == 201) {
+               imprimirVariablesPaciente(id);
+               //ponemos el formulario vacio
+               newName.value="";
+               newFecha.value="";
+               newGender.value="";
+               newCod.value="";
+               newObservaciones.value="";
+               alert("Se han modificado los datos del paciente!");
+           }else{
+               alert("Error introduciendo nuevo paciente");   
+           }
+       });
+       imprimirDatosPaciente(id);
+    }
 }
 
 function Filtrar(){
@@ -192,6 +205,7 @@ function Filtrar(){
              alert("NO existen muestras para esas variables.");
              return;
          }
+         alert("Esta es la evolucion de la variable elegida!");
          var listaVar= document.getElementById("listaVariables");
          listaVar.innerHTML = "";   
          //si es ==9 que es mostrar todas las variables

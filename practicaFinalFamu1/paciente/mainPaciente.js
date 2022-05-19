@@ -120,6 +120,9 @@ function anyadirMuestras(){
     //console.log("fecha: ",nuevaMuestra.fecha);
     //console.log("valor de la muestra",nuevaMuestra.valor);
     //console.log("ID del paciente",idPaciente);
+    if(idvariableActual=="" || nuevaMuestra.fecha=="" || nuevaMuestra.valor==""){
+        alert("Selecciona un valor para cada campo");
+    }
     agregarMuestra(idPaciente, idvariableActual, nuevaMuestra.fecha, nuevaMuestra.valor, function(idMuestraGlobal){
         if(idMuestraGlobal==0){
             alert("No se ha podido añadir la muestra.");
