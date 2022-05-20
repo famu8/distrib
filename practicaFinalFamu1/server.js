@@ -47,7 +47,7 @@ app.post("/api/medico/login",(req,res)=>{
             //en el main lo veo como "respuesta"
             envioMedico.push(medicos[i].nombre);
             envioMedico.push(medicos[i].id);
-            console.log(envioMedico);
+            //console.log(envioMedico);
             res.status(200).json(envioMedico); 
             //debo poner este return porque si no me da un error: 
             //Cannot set headers after they are sent to the client
@@ -427,7 +427,7 @@ wsServer.on("request", function (request) {
                                 //si el rol ser medico y si el id de la conexion es igual al id del medico del array de pacientes
                                 //envia la info 
                                 if(conexiones[i].rolServer=="medico" && conexiones[i].id==msg.idMedico){
-                                    console.log("Esta es la muestra: ",msg.muestra);
+                                    //console.log("Esta es la muestra: ",msg.muestra);
                                     // se pone msg.muestra.variable-1 porque el array busca por posicion y no por id 
                                     // porque sé que el orden de id=1,2,3.... 
                                     // si el envio la primera muestra con (msg.muestra.variable)

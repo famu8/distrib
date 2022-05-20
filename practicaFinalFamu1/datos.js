@@ -5,11 +5,11 @@ var medicos =[
     {id:3,nombre:"DR. MELENDEZ",login:"a",pass:"a"}
 ];
 var pacientes = [
-    {id:1, nombre:"FERNANDO A",fecha_nacim:"2022-04-18",genero:"M",medicoID:1, codigo_acceso:"a",observaciones:"ANALISIS DE SANGRE URGENTE"},
-    {id:2, nombre:"JUANJO",fecha_nacim:"2022-04-18",genero:"M",medicoID:1, codigo_acceso:"b",observaciones:"ANEMIA"},
-    {id:3, nombre:"GINES",fecha_nacim:"2022-04-18",genero:"M",medicoID:3, codigo_acceso:"c",observaciones:"ok"},
-    {id:4, nombre:"ENRIQUE",fecha_nacim:"2022-04-18",genero:"M",medicoID:1, codigo_acceso:"d",observaciones:"ok"},
-    {id:5, nombre:"JUANFRAN",fecha_nacim:"2022-04-18",genero:"M",medicoID:3, codigo_acceso:"e",observaciones:"ok"}
+    {id:1, nombre:"FERNANDO A",fecha_nacim:"2022-04-18",genero:"Hombre",medicoID:1, codigo_acceso:"a",observaciones:"ANALISIS DE SANGRE URGENTE"},
+    {id:2, nombre:"JUANJO",fecha_nacim:"2022-04-18",genero:"Hombre",medicoID:1, codigo_acceso:"b",observaciones:"ANEMIA"},
+    {id:3, nombre:"GINES",fecha_nacim:"2022-04-18",genero:"Hombre",medicoID:3, codigo_acceso:"c",observaciones:"ok"},
+    {id:4, nombre:"ENRIQUE",fecha_nacim:"2022-04-18",genero:"Hombre",medicoID:1, codigo_acceso:"d",observaciones:"ok"},
+    {id:5, nombre:"JUANFRAN",fecha_nacim:"2022-04-18",genero:"Hombre",medicoID:3, codigo_acceso:"e",observaciones:"ok"}
 ];
 var variables=[
     {id:1,nombre:"peso"},

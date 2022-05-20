@@ -81,7 +81,7 @@ function imprimirVariablesPaciente(id){
     cambiarSeccion("expedientePac");
     imprimirDatosPaciente(id);
     rest.get("/api/paciente/"+id+'/muestras', (estado, newMus) => {
-        console.log("Muestras de ese paciente: ",newMus);
+        //console.log("Muestras de ese paciente: ",newMus);
         var arrayVari=newMus;
             if (estado != 200) {
                 alert("Error cargando el paciente");
@@ -102,7 +102,7 @@ function imprimirDatosPaciente(id){
     rest.get("/api/paciente/"+id , (estado, datosPaciente) => {
         // console.log(respuesta);
         var arrayDatos=datosPaciente;
-        console.log("Datos del paciente: ",arrayDatos);
+        //console.log("Datos del paciente: ",arrayDatos);
          if (estado != 200) {
              alert("Error cargando el paciente");
          }
@@ -173,7 +173,7 @@ function modificarDatos(id){
     nuevoPaciente.obersvacionesNuevoPaciente==""){
         alert("Rellene todos los campos");
     }else{
-        console.log("Este es el nuevo paciente: ",nuevoPaciente);
+        //console.log("Este es el nuevo paciente: ",nuevoPaciente);
         rest.put("/api/paciente/"+id , nuevoPaciente, (estado,respuesta) => {
             //como cuando le envio al servidor los nuevos datos del apc se actualiza sola 
             //la bbdd no tengo que hacer nada con la respuesta que me envía el servidor.
