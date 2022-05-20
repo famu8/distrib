@@ -363,9 +363,13 @@ var puerto = 4444;
 httpServer.listen(puerto, function () {
 	console.log("Servidor de WebSocket iniciado en puerto:", puerto);
 });
-//var pacientesFiltrados=getPacientes(idMedicoGlobal);
-//console.log(pacientesProfe); // array de pacientes
+
+
+
+
+//variables globales
 var conexiones = []; //array conexiones
+var nombreMuestraGlobal;
 
 //.on es igual a addEventListener
 wsServer.on("request", function (request) {
@@ -409,6 +413,13 @@ wsServer.on("request", function (request) {
 
 				case "enviar":
                     console.log("Valor del select: ",msg.valorSelect);
+                    //For para obtener el nombre de la muestra
+                    for(var i=0;i<variables.length;i++){
+                        if(variables[i].id==msg.muestra.variable){
+                            nombreMuestraGlobal=variables[i].nombre;
+                        }
+                    }
+                    console.log("Nombre de la variable a compartir:",nombreMuestraGlobal);
                     if(msg.valorSelect<0){
                         //compartir con el medico
                         if(msg.valorSelect==-1){
@@ -423,7 +434,7 @@ wsServer.on("request", function (request) {
                                     //me voy a la posicion 1 del array de variables que corresponde con metros
                                     //por eso se le resta 1,para irme a peso
                                     conexiones[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
-                                    nombre:msg.nombre, variable:variables[(msg.muestra.variable)-1].nombre}));
+                                    nombre:msg.nombre, variable:nombreMuestraGlobal}));
                                 }
                             }
                         }else{
@@ -436,7 +447,7 @@ wsServer.on("request", function (request) {
                                 // distintas de medico para no enviarlo medicos y solo enviar a pacientes
                                 if(conexiones[i]!=connection && conexiones[i].rolServer!="medico"){
                                     conexiones[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
-                                    nombre:msg.nombre, variable:variables[(msg.muestra.variable)-1].nombre}));
+                                    nombre:msg.nombre, variable:nombreMuestraGlobal}));
                                 }
                             }
                         }
@@ -449,7 +460,7 @@ wsServer.on("request", function (request) {
                             //&& conexiones[i].id!=connection.id (esto creo que no hace falta)
                             if(conexiones[i].rolServer=="paciente" && conexiones[i].id==msg.valorSelect){
                                 conexiones[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
-                                nombre:msg.nombre, variable:variables[(msg.muestra.variable)-1].nombre}));
+                                nombre:msg.nombre, variable:nombreMuestraGlobal}));
                             }
                         }
                     }

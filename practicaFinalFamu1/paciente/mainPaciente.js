@@ -289,7 +289,8 @@ function enviar(){
         case "-1": //medico
         //le envio el nombre global del paciente para mostrarlo en el alert del medico
             conexion.send(JSON.stringify({operacion: "enviar",
-            valorSelect: selectValue, muestra:muestraACompartir,rol:"medico", nombre:pacienteGlobal.nombre,idMedico:idMedico}));
+                valorSelect: selectValue, muestra:muestraACompartir,rol:"medico",
+                nombre:pacienteGlobal.nombre,idMedico:idMedico}));
             break;
         case "-2": //todos
             conexion.send(JSON.stringify({operacion: "enviar",
