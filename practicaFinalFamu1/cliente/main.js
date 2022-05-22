@@ -1,8 +1,17 @@
+//VARIABLES GLOBALES
+
 var seccionActual = "login";
 //creo una variable medicoGlobal para recoger el id 
 //del medico que ha hecho login en el programa
 var idMedicoGlobal;
+//id global del pac
+var idPacienteGlobal;
+//creo la ocnexion para el ws
+var conexion ="";
 
+
+
+//fuciones para salir etc...
 function cambiarSeccion(seccion){   
     document.getElementById(seccionActual).classList.remove("activa");
     document.getElementById(seccion).classList.add("activa");
@@ -26,11 +35,16 @@ function cambiarA_agregarPac(){
 }
 
 
-//id global del pac
-var pacienteglobalid;
 
-//creo la ocnexion para el ws
-var conexion ="";
+
+
+
+
+
+
+
+
+
 
 //controla y da la bienvenida 
 function controlarAcceso(){  
@@ -97,7 +111,7 @@ function imprimirVariablesPaciente(id){
 }
 
 function imprimirDatosPaciente(id){
-    pacienteglobalid=id;
+    idPacienteGlobal=id;
     //cambiarSeccion("expedientePac");
     rest.get("/api/paciente/"+id , (estado, datosPaciente) => {
         // console.log(respuesta);
@@ -141,6 +155,11 @@ function agregarPaciente(){
                 //medicoGlobal== id del medico que acutalmente está en el sistema
                 alert("Se ha añadido un nuevo paciente!");
                 mostrarPacientes(idMedicoGlobal); 
+                document.getElementById("nombreNuevoPaciente").value="";
+                document.getElementById("fechaNacimNuevoPaciente").value="";
+                document.getElementById("generoNuevoPaciente").value="";
+                document.getElementById("codigoAccesoNuevoPaciente").value="";
+                document.getElementById("obersvacionesNuevoPaciente").value="";
                 cambiarSeccion("listado");
             }else{
                 alert("Error introduciendo nuevo paciente");
@@ -154,12 +173,6 @@ function agregarPaciente(){
 
 
 function modificarDatos(id){
-    //recogemos los valores del fomrulario para hacer reset de este una vez se modifiquen los datos del pac
-    newName = document.getElementById("nombreNuevoPaciente2");
-    newFecha= document.getElementById("fechaNacimNuevoPaciente2");
-    newGender= document.getElementById("generoNuevoPaciente2");
-    newCod=document.getElementById("codigoAccesoNuevoPaciente2");
-    newObservaciones=document.getElementById("obersvacionesNuevoPaciente2");
     //creo el nuevo paciente
     var nuevoPaciente={
         nombreNuevoPaciente: document.getElementById("nombreNuevoPaciente2").value,
@@ -180,11 +193,11 @@ function modificarDatos(id){
            if (estado == 201) {
                imprimirVariablesPaciente(id);
                //ponemos el formulario vacio
-               newName.value="";
-               newFecha.value="";
-               newGender.value="";
-               newCod.value="";
-               newObservaciones.value="";
+               document.getElementById("nombreNuevoPaciente2").value="";
+               document.getElementById("fechaNacimNuevoPaciente2").value="";
+               document.getElementById("generoNuevoPaciente2").value="";
+               document.getElementById("codigoAccesoNuevoPaciente2").value="";
+               document.getElementById("obersvacionesNuevoPaciente2").value="";
                alert("Se han modificado los datos del paciente!");
            }else{
                alert("Error introduciendo nuevo paciente");   
@@ -197,7 +210,7 @@ function modificarDatos(id){
 function Filtrar(){
     var listafiltrar= document.getElementById('listaVariables1').value;
     //console.log("Esta es la variable a filtrar: ",listafiltrar)
-    rest.get("/api/paciente/"+pacienteglobalid+"/muestras/"+listafiltrar , (estado, respuesta) => {
+    rest.get("/api/paciente/"+idPacienteGlobal+"/muestras/"+listafiltrar , (estado, respuesta) => {
         //console.log('Muetsras que me envia el server: ', respuesta);
         var muestraFiltrada=[];
         muestraFiltrada=respuesta;
@@ -210,26 +223,21 @@ function Filtrar(){
          listaVar.innerHTML = "";   
          //si es ==9 que es mostrar todas las variables
          if(listafiltrar==9){
-            imprimirVariablesPaciente(pacienteglobalid);
+            imprimirVariablesPaciente(idPacienteGlobal);
          }
         else{
-         for (var i = 0; i < muestraFiltrada.length; i++) {
-            listaVar.innerHTML += "<li>" +muestraFiltrada[i].valor+ "</li>";       
+            for(var i = 0; i < muestraFiltrada.length; i++) {
+                listaVar.innerHTML += "<li>" +muestraFiltrada[i].valor+ "</li>";       
+            }
         }
-    }
      });
 
 }
 
-var arrayVariables=[];
-function filtrarNombreVariables(nombre){
-    rest.get("/api/variable",function(estado,variables){
-        if(estado==20){
-            arrayVariables=variables;
-        }
 
-    });
-}
+
+
+//web socket para el medico
 
 function openWsMedico(){
     conexion = new WebSocket('ws://localhost:4444', "pacientes");

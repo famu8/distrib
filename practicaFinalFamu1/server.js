@@ -24,6 +24,14 @@ var muestras=datos.muestras;
 var contadorPacientes=6;
 
 
+
+
+
+
+
+
+
+
 //// PARTE DEL SERVIDOR DEL MEDICO/////
 //ARRAY VARIABLES DE LA APP
 app.get("/api/variable", (req,res)=>{
@@ -58,26 +66,6 @@ app.post("/api/medico/login",(req,res)=>{
     res.status(403).json("Validacion incorrecta");
 });
 
-//MOSTRAR DATOS PAC POR ID SIN COD ACCESO 
-app.get("/api/paciente/:id",(req,res)=>{
-    //recojo el id de la url 
-    var id = req.params.id;
-    var datos=[];
-    for(var i=0;i<pacientes.length;i++){
-        if(pacientes[i].id==id){
-            //recojo las variables 
-            datos.push(pacientes[i].id);
-            datos.push(pacientes[i].nombre);
-            datos.push(pacientes[i].medicoID);
-            datos.push(pacientes[i].observaciones)
-            console.log("Estos son los datos del paciente:",datos);
-            //las envio en formato json, lo que me permite no recoger el codigo de acceso 
-            res.status(200).json(datos);
-        }
-    }
-    res.status(404).json("No existe paciente con ese id.");
-});
-
 //MOSTRAR PACIENES POR ID DEL MEDICO
 app.get("/api/medico/:id/pacientes",(req,res)=>{
     //recojo  el id del medico
@@ -106,6 +94,30 @@ app.get("/api/paciente/:id/muestras",(req,res)=>{
     }
     res.status(200).json(newMus);
 });
+
+//MOSTRAR DATOS PAC POR ID SIN COD ACCESO 
+app.get("/api/paciente/:id",(req,res)=>{
+    //recojo el id de la url 
+    var id = req.params.id;
+    var datos=[];
+    for(var i=0;i<pacientes.length;i++){
+        if(pacientes[i].id==id){
+            //recojo las variables 
+            datos.push(pacientes[i].id);
+            datos.push(pacientes[i].nombre);
+            datos.push(pacientes[i].medicoID);
+            datos.push(pacientes[i].observaciones)
+            //console.log("Estos son los datos del paciente:",datos);
+            //las envio en formato json, lo que me permite no recoger el codigo de acceso 
+            res.status(200).json(datos);
+            return;
+        }
+    }
+    res.status(404).json("No existe paciente con ese id.");
+});
+
+
+
 
 //MOSTRAR DATOS MEDICO POR ID SIN PASSWORD 
 app.get("/api/medico/:id",(req,res)=>{
@@ -173,18 +185,19 @@ app.put("/api/paciente/:id",(req,res)=>{
 //Filtrar
 app.get("/api/paciente/:pacienteglobal/muestras/:listafiltrar",(req,res)=>{
     //recojo el id de la url 
-    var newMuestra=[];
+    var muestrasFiltradas=[];
     var pacienteglobal = req.params.pacienteglobal;
+    //listafiltrar=value de la lista de variables a filtrar
     var listafiltrar = req.params.listafiltrar;
-    //console.log("ID del apceinte seleccionado",pacienteglobal);
+    //console.log("ID del paciente seleccionado",pacienteglobal);
     //console.log("Valor de la variable seleccionada",listafiltrar);
     for(var i=0;i< muestras.length;i++){
         if(muestras[i].variable==listafiltrar && muestras[i].pacienteID==pacienteglobal){
-            newMuestra.push(muestras[i])
+            muestrasFiltradas.push(muestras[i])
         }
     }
     //console.log(newMuestra);
-    res.status(200).json(newMuestra);
+    res.status(200).json(muestrasFiltradas);
     return;
    
 });
@@ -231,7 +244,7 @@ var rpc = require("./rpc.js");
 var datos=require("./datos.js");
 
 //id paciente global
-var idPaciente;
+var idPacienteGlobal;
 //variable global para el id de las nuevas muestras
 //empieza en 8 porque ya tenemos  muestras creadas previamente
 var idMuestraGlobal=14;
@@ -242,8 +255,8 @@ function login(codAcc){
     for(var i=0; i < pacientes.length;i++){
         if(codAcc==pacientes[i].codigo_acceso){
             idMedicoGlobal=pacientes[i].medicoID;
-            console.log("ID del medico actual: ", idMedicoGlobal);
-            idPaciente=pacientes[i].id;
+            //console.log("ID del medico actual: ", idMedicoGlobal);
+            idPacienteGlobal=pacientes[i].id;
             return pacientes[i];
         }
     }
@@ -280,11 +293,14 @@ function listadoMuestras(idPaciente){
 
 function agregarMuestra(idPaciente, idVariable,fecha,valor){
     //si me envian algo diferente devuelve 0
-    if(!idPaciente||!idVariable||!fecha||!valor) return 0;
-    idMuestraGlobal++;
-    muestras.push({idMuestra:idMuestraGlobal,pacienteID:idPaciente,variable:idVariable,fecha:fecha,valor:valor});
-    //console.log("Estas son las muestras que hay: ",muestras);
-    return idMuestraGlobal;
+    if(!idPaciente||!idVariable||!fecha||!valor){
+        return 0;
+    }else{
+        idMuestraGlobal++;
+        muestras.push({idMuestra:idMuestraGlobal,pacienteID:idPaciente,variable:idVariable,fecha:fecha,valor:valor});
+        //console.log("Estas son las muestras que hay: ",muestras);
+        return idMuestraGlobal;
+    }
 }
 
 function eliminarMuestra(idValor){

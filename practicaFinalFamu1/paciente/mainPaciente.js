@@ -1,5 +1,5 @@
 var app = rpc("localhost", "MiGestionPacientes");
-var seccionActual = "login";
+
 
 // debo definir las funciones que recojo del servidor 
 var login = app.procedure("login");
@@ -11,8 +11,9 @@ var eliminarMuestra=app.procedure("eliminarMuestra");
 var getAllMuestras =app.procedure("getAllMuestras");
 
 //variables globales
-var idMedico;
-var idPaciente;
+var seccionActual = "login";
+var idMedicoGlobal;
+var idPacienteGlobal;
 var pacienteGlobal=[];
 
 //funcion para ir cambiando de pestañas
@@ -27,6 +28,15 @@ function salir(){
     //recargar la pagina
     location.reload();
 }
+
+
+
+
+
+
+
+
+
 //creo la conexion al webSocket fuera para hacerla global 
 //debo hacer esto porque si quiero que el ws no haga nada hasta que la funcion log in 
 //no se ejcute, debe de ser asi --> ver funcion openWs()
@@ -36,17 +46,17 @@ var conexion ="";
 function logearAsincrono(){
     var codAcc= document.getElementById("codAcc").value;
     //console.log(codAcc);
-    login(codAcc,function(pacientes){
+    login(codAcc,function(pacienteActual){
         //console.log(pacientes);
-        if(pacientes!=null){
+        if(pacienteActual!=null){
             //recojo los pacientes en la variable global
-            pacienteGlobal=pacientes;
+            pacienteGlobal=pacienteActual;
             //console.log(pacientesGlobal);
             //console.log("PACIENTE",pacientesGlobal);
             //recojo el id del medico y del paciente para futuras funciones
-            idMedico=pacientes.medicoID;
+            idMedicoGlobal=pacienteActual.medicoID;
             //console.log(idMedico);
-            idPaciente=pacientes.id;
+            idPacienteGlobal=pacienteActual.id;
             //console.log(idPaciente);
 
             //creo esta funcion para abrir el ws en el main y recoger los
@@ -65,14 +75,12 @@ function logearAsincrono(){
         }
     });
 }
-var idMedicoGlobal;
+
 function mostrarDatosMedico(){
-    datosMedico(idMedico, function(datosMed){
+    datosMedico(idMedicoGlobal, function(datosMed){
         if(datosMed!=null){
-            //console.log("Este es el paciente global: ",pacientesGlobal);
             var bienvenida=document.getElementById("bienvenida"); 
             bienvenida.innerHTML = "Bienvenido/a al menú principal." +" ¡ "+ pacienteGlobal.nombre+" ! <br>" +"Tu medico es : " + datosMed[1] + "<br> Observaciones: " + pacienteGlobal.observaciones;
-            idMedicoGlobal=datosMed[1];
         }else{
             alert("El medico no existe");
         }
@@ -81,10 +89,9 @@ function mostrarDatosMedico(){
 
 
 function mostrarMuestras(){
-    var listaMuestras= document.getElementById("listaMuestras");
-    listaMuestras.innerHTML="";
+    var listaMuestras="";
     //console.log("Id del paciente que estamos viendo: ",idPaciente);
-    listadoMuestras(idPaciente,function(muestraActual){
+    listadoMuestras(idPacienteGlobal,function(muestraActual){
         //console.log(muestraActual);
         var variableForm = document.getElementById("filtrar").value;
         //console.log("Esta es la variable elegida: ",variableForm);
@@ -93,13 +100,15 @@ function mostrarMuestras(){
             if(variableForm!=='0'){
                 for(var i=0; i< muestraActual.length;i++){
                     if(variableForm==muestraActual[i].variable){
-                        listaMuestras.innerHTML+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button></li>";
+                        listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button></li>";
                     }
                 }
+                document.getElementById("listaMuestras").innerHTML=listaMuestras;
             }else{
                 for(var i=0; i<muestraActual.length;i++){
-                    listaMuestras.innerHTML+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button></li>";
+                    listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button></li>";
                 }
+                document.getElementById("listaMuestras").innerHTML=listaMuestras;
             }
         }else{
             alert("No se han obtenido las muestras del paciente");
@@ -108,6 +117,7 @@ function mostrarMuestras(){
 }
 
 function anyadirMuestras(){
+    //recojo el id de la variable que quiero añadir y la fecha y valor
     var idvariableActual=document.getElementById("listaVariables").value;
     var nuevaMuestra={    
         fecha: document.getElementById("fechaNuevaMuestra").value,
@@ -120,31 +130,32 @@ function anyadirMuestras(){
     //console.log("ID del paciente",idPaciente);
     if(idvariableActual=="" || nuevaMuestra.fecha=="" || nuevaMuestra.valor==""){
         alert("Selecciona un valor para cada campo");
+    }else{
+        agregarMuestra(idPacienteGlobal, idvariableActual, nuevaMuestra.fecha, nuevaMuestra.valor, function(idMuestraGlobal){
+            if(idMuestraGlobal==0){
+                alert("No se ha podido añadir la muestra.");
+                document.getElementById("listaVariables").value="";
+                document.getElementById("fechaNuevaMuestra").value="";
+                document.getElementById("valorNuevaMuestra").value="";
+                cambiarSeccion("listaPacientes");
+            }else{
+                alert("Se ha añadido la muestra");
+                //recargar el 'formulario'
+                document.getElementById("listaVariables").value="";
+                document.getElementById("fechaNuevaMuestra").value="";
+                document.getElementById("valorNuevaMuestra").value="";
+                cambiarSeccion("listaPacientes");
+                mostrarMuestras();
+            }
+        });   
     }
-    agregarMuestra(idPaciente, idvariableActual, nuevaMuestra.fecha, nuevaMuestra.valor, function(idMuestraGlobal){
-        if(idMuestraGlobal==0){
-            alert("No se ha podido añadir la muestra.");
-            document.getElementById("listaVariables").value="";
-            document.getElementById("fechaNuevaMuestra").value="";
-            document.getElementById("valorNuevaMuestra").value="";
-            cambiarSeccion("listaPacientes");
-        }else{
-            alert("Se ha añadido la muestra");
-            //recargar el 'formulario'
-            document.getElementById("listaVariables").value="";
-            document.getElementById("fechaNuevaMuestra").value="";
-            document.getElementById("valorNuevaMuestra").value="";
-            cambiarSeccion("listaPacientes");
-            mostrarMuestras();
-        }
-    });
 }
 
 
 function eliminarMain(idValor){
     //eliminado es un booleano
     eliminarMuestra(idValor,function(eliminado){
-        //If elimiando==true
+        //if elimiando==true
         if(eliminado){
             alert("Se ha elimiando la muestra");
             mostrarMuestras();
@@ -183,7 +194,7 @@ function eliminarMain(idValor){
 
 
 
-
+//para abajo websocket
 
 
 
@@ -216,9 +227,8 @@ function compartir(idMuestra){
     //console.log("Esta es la muestra que vas a compartir:",muestraACompartir);
     cambiarSeccion("divCompartir");
     //creamos el select
-    if(centinela==false){
-        createSelect();
-    }
+    createSelect();
+    
 }
 
 //Creo unc entinela para que los apcientes nos e doblen en el select
@@ -226,18 +236,17 @@ function compartir(idMuestra){
 //else: NO se crea de nuevo el select y NO se doblan los pacientes
 var centinela=false;
 function createSelect(){
-    var select = document.getElementById("formCompartir");
-    select.innerHTML+="<optgroup label=NoAmigos>";
-    select.innerHTML+="<option value="+-1+"> Medico </option>";
-    select.innerHTML+="<option value="+-2+"> Todos </option>";
-    select.innerHTML+="</optgroup>";
-    select.innerHTML+="<optgroup label=Amigos>";
+    var select = "";
+    select+="<optgroup label=NoAmigos>";
+    select+="<option value="+-1+"> Medico </option>";
+    select+="<option value="+-2+"> Todos </option>";
+    select+="</optgroup>";
+    select+="<optgroup label=Amigos>";
     for(var i = 0; i < pacsFiltrados.length; i++){
-        select.innerHTML+="<option id=" + pacsFiltrados[i].id +"  value="+pacsFiltrados[i].id+"> " + pacsFiltrados[i].nombre + "</option>";
+        select+="<option id=" + pacsFiltrados[i].id +"  value="+pacsFiltrados[i].id+"> " + pacsFiltrados[i].nombre + "</option>";
     }
     select.innerHTML+="</optgroup>";
-    //si creo el select cambio el valor del centinela a true
-    centinela=true;
+    document.getElementById("formCompartir").innerHTML=select;
 }
 
 function filtrarPacs(idMedico,pacienteJSON){
@@ -245,7 +254,7 @@ function filtrarPacs(idMedico,pacienteJSON){
     for(var i=0; i < pacienteJSON.length;i++){
         //depues del && --> esto lo aho para NO PODER COMPARTIR la muestra el paciente consigo mismo
         //NO mando el paciente que va a compartir (no lo mando asi mismo)
-        if(idMedico==pacienteJSON[i].medicoID && idPaciente!=pacienteJSON[i].id){
+        if(idMedico==pacienteJSON[i].medicoID && idPacienteGlobal!=pacienteJSON[i].id){
             pacsFiltrados.push(pacienteJSON[i]);
         }
     }
@@ -261,7 +270,7 @@ function openWs(){
         console.log("SOY EL WEBSOCKET MAIN!!!");
         //le envio solo el rol de apciente porque desde este
         //Cliente solo entran pacientes
-        conexion.send(JSON.stringify({operacion:"login",rol:"paciente",id:idPaciente}));
+        conexion.send(JSON.stringify({operacion:"login",rol:"paciente",id:idPacienteGlobal}));
     });
 
     //cuando recibo un mensaje, se ejecuta el callback
@@ -269,7 +278,7 @@ function openWs(){
         var msg=JSON.parse(event.data);
         switch(msg.operacion){
             case "filtrarPacs":
-                pacsFiltrados=filtrarPacs(idMedico,msg.pacientesTodos);
+                pacsFiltrados=filtrarPacs(idMedicoGlobal,msg.pacientesTodos);
                 break;
             case "notificar":
                 var mensajeEmergente=msg.nombre+" ha compartido contigo que el día " + msg.muestra.fecha
@@ -290,7 +299,7 @@ function enviar(){
         //le envio el nombre global del paciente para mostrarlo en el alert del medico
             conexion.send(JSON.stringify({operacion: "enviar",
                 valorSelect: selectValue, muestra:muestraACompartir,rol:"medico",
-                nombre:pacienteGlobal.nombre,idMedico:idMedico}));
+                nombre:pacienteGlobal.nombre,idMedico:idMedicoGlobal}));
             break;
         case "-2": //todos
             conexion.send(JSON.stringify({operacion: "enviar",
