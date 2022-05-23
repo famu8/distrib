@@ -202,6 +202,68 @@ app.get("/api/paciente/:pacienteglobal/muestras/:listafiltrar",(req,res)=>{
    
 });
 
+
+
+
+
+
+
+app.post("/api/paciente/:id/duplicar", function (req, res){
+    //Obtener los datos del nuevo paciente
+    var idPac=req.params.id;
+    var paciente;
+    for (let i = 0; i < pacientes.length; i++) {
+        if (pacientes[i].id == idPac) {
+            paciente = pacientes[i];  
+        } 
+    }
+    var nuevoPaciente =  {   
+        id: contadorPacientes, 
+        nombre: paciente.nombre, 
+        fecha_nacimiento: paciente.fecha_nacim, 
+        genero: paciente.genero, 
+        medicoID: paciente.medicoID, 
+        codigo_acceso: paciente.codigo_acceso, 
+        observaciones: paciente.observaciones
+    };
+    console.log("nuevo pac:",nuevoPaciente);//Visualizar nuevo paciente
+    pacientes.push(nuevoPaciente);//Incluir en array de pacientes
+    res.status(200).json(nuevoPaciente.id);//Se envia el nuevo paciente creado
+    console.log(pacientes);
+    console.log("Paciente duplicado!");
+    
+});
+
+
+let date = new Date();
+let output = String(date.getDate()).padStart(2, '0') + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + date.getFullYear();
+console.log(output);
+
+function duplicarMuestrafunc(idValor){
+    //console.log("idValor:",idValor);
+    var pos;
+    for(var i=0; i<pacientes.length;i++ ){
+        if(pacientes[i].id==idValor){
+            pos=i;
+        }
+    }
+    if(pos==-1){
+        return -1;
+    }else{
+        var nuevaMuestra={idMuestra: idMuestraGlobal, pacienteID: muestras[pos].pacienteID, variable: muestras[pos].variable, fecha: output, valor: muestras[pos].valor};
+        muestras.push(nuevaMuestra);
+        idMuestraGlobal++;
+        console.log(muestras);
+        return idMuestraGlobal--;
+    }
+        
+}
+
+//////////////////////////////////////
+
+
+
+
 //puerto de escucha del server
 app.listen(3000);
 
@@ -247,7 +309,7 @@ var datos=require("./datos.js");
 var idPacienteGlobal;
 //variable global para el id de las nuevas muestras
 //empieza en 8 porque ya tenemos  muestras creadas previamente
-var idMuestraGlobal=14;
+var idMuestraGlobal=5000;
 var idMedicoGlobal;
 
 
@@ -334,6 +396,8 @@ app.register(agregarMuestra);
 app.register(eliminarMuestra);
 //funciones creadas por mi para la parte 3: 
 app.register(getAllMuestras);
+
+app.register(duplicarMuestrafunc);
 
 
 function getAllMuestras(){

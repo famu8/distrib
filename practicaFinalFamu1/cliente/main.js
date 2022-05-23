@@ -80,10 +80,11 @@ function mostrarPacientes(id){
         if (estado != 200) {
             alert("Error cargando la lsita de pacientes");
         }
+        console.log("msotrar",newPac);
         var lista = document.getElementById("pacientes");
         lista.innerHTML = "";  
         for (var i = 0; i < newPac.length; i++) {
-            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].id + " - " + newPac[i].nombre + " - Fecha de Nacimiento:  " + newPac[i].fecha_nacim+ " - Género: " + newPac[i].genero + " - ID del Médico: "+ newPac[i].medicoID + " - Código acceso: "+ newPac[i].codigo_acceso + " - Observaciones: "+ newPac[i].observaciones+ "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].id+')"> Consultar </button>' + "</li><br>";
+            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].id + " - " + newPac[i].nombre + " - Fecha de Nacimiento:  " + newPac[i].fecha_nacim+ " - Género: " + newPac[i].genero + " - ID del Médico: "+ newPac[i].medicoID + " - Código acceso: "+ newPac[i].codigo_acceso + " - Observaciones: "+ newPac[i].observaciones+ "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].id+')"> Consultar </button>'+ " " + '<button type="submit" onclick="duplicar('+newPac[i].id+')"> Duplicar </button>' + "</li><br>";
         }
     });
 }
@@ -233,6 +234,27 @@ function Filtrar(){
      });
 
 }
+
+
+function duplicar(idPac){
+    rest.post("/api/paciente/"+idPac+"/duplicar",function(estado,respuesta){
+        console.log("estoy aqui");
+        if(estado==200){
+            cambiarSeccion("listado");
+            mostrarPacientes(idMedicoGlobal);
+        }else{
+            alert("error no se ha duplicado el apciente");
+        }
+    });
+}
+
+
+
+
+
+
+
+
 
 
 

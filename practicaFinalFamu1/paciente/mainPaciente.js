@@ -9,6 +9,7 @@ var listadoMuestras = app.procedure("listadoMuestras");
 var agregarMuestra =app.procedure("agregarMuestra");
 var eliminarMuestra=app.procedure("eliminarMuestra");
 var getAllMuestras =app.procedure("getAllMuestras");
+var  duplicarMuestrafunc=app.procedure("duplicarMuestrafunc");
 
 //variables globales
 var seccionActual = "login";
@@ -100,13 +101,13 @@ function mostrarMuestras(){
             if(variableForm!=='0'){
                 for(var i=0; i< muestraActual.length;i++){
                     if(variableForm==muestraActual[i].variable){
-                        listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button></li>";
+                        listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button><button onclick='duplicarMuestra("+muestraActual[i].idMuestra+")'>Duplicar</button></li>";
                     }
                 }
                 document.getElementById("listaMuestras").innerHTML=listaMuestras;
             }else{
                 for(var i=0; i<muestraActual.length;i++){
-                    listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button></li>";
+                    listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button><button onclick='duplicarMuestra("+muestraActual[i].idMuestra+")'>Duplicar</button></li>";
                 }
                 document.getElementById("listaMuestras").innerHTML=listaMuestras;
             }
@@ -184,6 +185,17 @@ function eliminarMain(idValor){
 
 
 
+function duplicarMuestra(idValor){
+    duplicarMuestrafunc(idValor,function(id){
+        if(id == -1){
+            alert("No se ha podido duplicar");
+        }
+        else{
+            console.log("hola");
+            mostrarMuestras();
+        }
+    });
+}
 
 
 
