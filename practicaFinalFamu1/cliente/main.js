@@ -35,34 +35,24 @@ function cambiarA_agregarPac(){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 //controla y da la bienvenida 
 function controlarAcceso(){  
     var log={
-    login: document.getElementById("loginMedico").value,
-    pass: document.getElementById("pass").value
+        login: document.getElementById("loginMedico").value,
+        pass: document.getElementById("pass").value
     };
     //desde esta ruta le mando log al server para validar los datos
     //el callback se ejecuta cuadno deeuvlo un estado y respuesta
     rest.post("/api/medico/login", log, function (estado, envioMedico) {
-        //console.log(envioMedico);
         if(estado == 200){
             //el id del medico global
-            idMedicoGlobal=envioMedico[1];
+            let medicoParseado = JSON.parse(JSON.stringify(envioMedico))[0];
+            //console.log("con parse",medicoParseado);
+            idMedicoGlobal=medicoParseado.idMedico;
             openWsMedico();
             cambiarSeccion("listado");
             var welcome= document.getElementById("bienvenida");
-            welcome.innerHTML="Bienvenido al menu principal: " + envioMedico[0] +"<br>" +" "+ "Estos son tus pacientes: ";
+            welcome.innerHTML="Bienvenido al menu principal: " + medicoParseado.nombreMedico +"<br>" +" "+ "Estos son tus pacientes: ";
             //repsuesta==id del medico que me devuelve el servidor
             mostrarPacientes(idMedicoGlobal);
         }else{
@@ -76,15 +66,16 @@ function controlarAcceso(){
 //obtieeen un array con los datos de sus pacientes
 //le debo pasar el id del medico como parametro para poder crear la url 
 function mostrarPacientes(id){
-    rest.get("/api/medico/"+id+"/pacientes", (estado, newPac) => {
+    //console.log("Este es el id del medico en la funcion de la llamada: ", id);
+    rest.get("/api/medico/"+id+"/pacientes", function(estado, newPac){
         if (estado != 200) {
-            alert("Error cargando la lsita de pacientes");
+            //alert("Error cargando la lsita de pacientes");
         }
-        console.log("msotrar",newPac);
+        //console.log("estos son los pacientes de ese medico:",newPac);
         var lista = document.getElementById("pacientes");
         lista.innerHTML = "";  
         for (var i = 0; i < newPac.length; i++) {
-            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].id + " - " + newPac[i].nombre + " - Fecha de Nacimiento:  " + newPac[i].fecha_nacim+ " - Género: " + newPac[i].genero + " - ID del Médico: "+ newPac[i].medicoID + " - Código acceso: "+ newPac[i].codigo_acceso + " - Observaciones: "+ newPac[i].observaciones+ "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].id+')"> Consultar </button>'+ " " + '<button type="submit" onclick="duplicar('+newPac[i].id+')"> Duplicar </button>' + "</li><br>";
+            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].idPaciente + " - " + newPac[i].nombrePaciente + " - Fecha de Nacimiento:  " + newPac[i].fechaNacimientoPaciente+ " - Género: " + newPac[i].generoPaciente + " - ID del Médico: "+ newPac[i].idMedicoPaciente + " - Código acceso: "+ newPac[i].codigoAccesoPaciente + " - Observaciones: "+ newPac[i].observacionesPaciente + "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].idPaciente+')"> Consultar </button>'+ " " + '<button type="submit" onclick="duplicar('+newPac[i].idPaciente+')"> Duplicar </button>' + "</li><br>";
         }
     });
 }
@@ -95,9 +86,9 @@ function imprimirVariablesPaciente(id){
     var idactualMuestra;
     cambiarSeccion("expedientePac");
     imprimirDatosPaciente(id);
-    rest.get("/api/paciente/"+id+'/muestras', (estado, newMus) => {
-        //console.log("Muestras de ese paciente: ",newMus);
-        var arrayVari=newMus;
+    rest.get("/api/paciente/"+id+'/muestras', (estado, muestrasPaciente) => {
+        //console.log("Muestras de ese paciente: ",muestrasPaciente);
+        var arrayVari=muestrasPaciente;
             if (estado != 200) {
                 alert("Error cargando el paciente");
                 cambiarSeccion("listado");
@@ -106,7 +97,7 @@ function imprimirVariablesPaciente(id){
             listaVar.innerHTML = "";
             for (var i = 0; i < arrayVari.length; i++) {
                 idactualMuestra=arrayVari[i].idMuestra;
-                listaVar.innerHTML +=  "<li> Muestra: "+i+" con ID: " + idactualMuestra+" Valor: "+arrayVari[i].valor+"</li><br>";
+                listaVar.innerHTML +=  "<li> Muestra: "+i+" con ID: " + idactualMuestra +" Valor: "+arrayVari[i].valorMuestra+"</li><br>";
             }
     });
 }
@@ -115,21 +106,19 @@ function imprimirDatosPaciente(id){
     idPacienteGlobal=id;
     //cambiarSeccion("expedientePac");
     rest.get("/api/paciente/"+id , (estado, datosPaciente) => {
-        // console.log(respuesta);
-        var arrayDatos=datosPaciente;
-        //console.log("Datos del paciente: ",arrayDatos);
+        //console.log("datos del paciente:",datosPaciente);
          if (estado != 200) {
              alert("Error cargando el paciente");
          }
          var listaVar= document.getElementById("listadatos");
          //creo este array para imprimir el nombre de los valores que tendran las 
          //variables que se van a mostrar
-         var arrayForPrint=['ID: ', "Nombre: ", "ID del médico: ", "Observaciones: "];
          listaVar.innerHTML = "";    
-         for (var i=0; i<arrayDatos.length;i++) {
-            listaVar.innerHTML += "<li>"+arrayForPrint[i]+ " "+ arrayDatos[i]+"</li><br>";        
-         }
-         listaVar.innerHTML += '<button onclick="modificarDatos('+id+')">Modificar Datos Paciente</button>' ;
+         listaVar.innerHTML += "<li>"+ "idPaciente: "+ datosPaciente[0].idPaciente+"</li><br>";        
+         listaVar.innerHTML += "<li>"+ "Nombre del paciente: "+ datosPaciente[0].nombrePaciente+"</li><br>";        
+         listaVar.innerHTML += "<li>"+ "ID del medico: "+ datosPaciente[0].idMedicoPaciente+"</li><br>";        
+         listaVar.innerHTML += "<li>"+ "Observaciones del paciente: "+ datosPaciente[0].observacionesPaciente+"</li><br>";        
+         listaVar.innerHTML += '<button onclick="modificarDatos('+id+')">Modificar</button>' ;
          
      });
 
@@ -168,8 +157,6 @@ function agregarPaciente(){
             }
         });
     }
-
-
 }
 
 
@@ -185,7 +172,7 @@ function modificarDatos(id){
     if(nuevoPaciente.nombreNuevoPaciente==""||nuevoPaciente.fechaNacimientoNuevoPaciente=="" ||
     nuevoPaciente.generoNuevoPaciente==""||nuevoPaciente.codigoAccesoNuevoPaciente==""||
     nuevoPaciente.obersvacionesNuevoPaciente==""){
-        alert("Rellene todos los campos");
+    alert("Rellene todos los campos");
     }else{
         //console.log("Este es el nuevo paciente: ",nuevoPaciente);
         rest.put("/api/paciente/"+id , nuevoPaciente, (estado,respuesta) => {
@@ -212,12 +199,8 @@ function Filtrar(){
     var listafiltrar= document.getElementById('listaVariables1').value;
     //console.log("Esta es la variable a filtrar: ",listafiltrar)
     rest.get("/api/paciente/"+idPacienteGlobal+"/muestras/"+listafiltrar , (estado, respuesta) => {
-        //console.log('Muetsras que me envia el server: ', respuesta);
-        var muestraFiltrada=[];
-        muestraFiltrada=respuesta;
          if (estado != 200) {
              alert("NO existen muestras para esas variables.");
-             return;
          }
          alert("Esta es la evolucion de la variable elegida!");
          var listaVar= document.getElementById("listaVariables");
@@ -227,15 +210,15 @@ function Filtrar(){
             imprimirVariablesPaciente(idPacienteGlobal);
          }
         else{
-            for(var i = 0; i < muestraFiltrada.length; i++) {
-                listaVar.innerHTML += "<li>" +muestraFiltrada[i].valor+ "</li>";       
+            for(var i = 0; i < respuesta.length; i++) {
+                listaVar.innerHTML += "<li>"+"ID: "+respuesta[i].idMuestra+ " -  Valor: " +respuesta[i].valorMuestra+ "</li>";       
             }
         }
      });
 
 }
 
-
+/*
 function duplicar(idPac){
     rest.post("/api/paciente/"+idPac+"/duplicar",function(estado,respuesta){
         console.log("estoy aqui");
@@ -246,15 +229,7 @@ function duplicar(idPac){
             alert("error no se ha duplicado el apciente");
         }
     });
-}
-
-
-
-
-
-
-
-
+}*/
 
 
 
@@ -265,7 +240,7 @@ function openWsMedico(){
     conexion = new WebSocket('ws://localhost:4444', "pacientes");
     //con esto le digo al server que estoy conectado
     conexion.addEventListener('open', function (event) {
-        console.log("SOY EL WEBSOCKET MAIN!!!");
+        console.log("SOY EL WEBSOCKET MEDICO!!!");
         conexion.send(JSON.stringify({operacion:"login",rol:"medico",id:idMedicoGlobal}));
     }); // Connection opened 
 
@@ -281,7 +256,6 @@ function openWsMedico(){
         }
     });
 }
-
 
 
 

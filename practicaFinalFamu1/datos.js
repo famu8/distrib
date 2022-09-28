@@ -1,4 +1,4 @@
-
+/*
 var medicos =[
     {id:1,nombre:"DR. QUINTANA",login:"f",pass:"f"},
     {id:2,nombre:"DR. JIMENEZ",login:"j",pass:"j"},
@@ -53,3 +53,4 @@ module.exports.pacientes=pacientes;
 module.exports.medicos=medicos;
 module.exports.variables=variables;
 module.exports.muestras=muestras;
+*/

@@ -11,17 +11,28 @@ app.use(express.json()); // en el req.body tengamos el body JSON
 //var app = servidor.createApp("MiGestionPacientes");
 //var rpc = require("./rpc.js");
 
-//datos tiene que estar obligatoriamente en la misma carpeta que el servidor
-var datos=require("./datos.js");
 
-//BASES DE DATOS (exportadas)
-var medicos=datos.medicos;
-var pacientes=datos.pacientes; 
-var variables=datos.variables;
-var muestras=datos.muestras;
 
-//contador de pacientes a incrementar 
-var contadorPacientes=6;
+//CONEXION AL SERVIDOR DE BBDD
+const mysql = require('mysql');
+const basedatos = {
+    host: 'localhost', 
+    user: 'famu1', 
+    password: 'famu123', 
+    database: 'teoria_telemedicina'
+}
+var connection = mysql.createConnection(basedatos);
+connection.connect((err)=>{
+    if(err){console.error('Error conectando a la bbdd: ', err);
+        process.exit();
+    }else{console.log('Conectado correctamente a servidor de bbdd')}
+});
+
+
+
+
+
+
 
 
 
@@ -34,180 +45,138 @@ var contadorPacientes=6;
 
 //// PARTE DEL SERVIDOR DEL MEDICO/////
 //ARRAY VARIABLES DE LA APP
-app.get("/api/variable", (req,res)=>{
-    res.status(200).json(variables);
+
+//Obtiene un array con todas las variables
+app.get('/api/variable', (req, res) => {
+    var sql = 'SELECT * FROM variables';
+    connection.query(sql, (err, variables) => {
+        if(err){
+            console.log('Error en la obtencion de variables: ', err);
+        }else{console.log('Datos obtenidos: ', variables);
+        res.json(variables);}   
+    });
+    
 });
 
 //VALIDAR DATOS EL LOGIN
 app.post("/api/medico/login",(req,res)=>{
-    //peticion=log del main
     //res=lo que el envio al main
+    //hago el sql 
     var medicoActual={
         login: req.body.login,
         pass: req.body.pass
     };
-    //array apra enviarle al main el nombre del medico y el id de este
-    var envioMedico=[];
-    //console.log("Credenciales medico actual: ",medicoActual);
-    for(var i=0; i< medicos.length;i++ ) { 
-        if(medicos[i].login==medicoActual.login && medicos[i].pass==medicoActual.pass){
-            //le devuelvo el id del medico que ha accedido al programa, 
-            //en el main lo veo como "respuesta"
-            envioMedico.push(medicos[i].nombre);
-            envioMedico.push(medicos[i].id);
-            //console.log(envioMedico);
-            res.status(200).json(envioMedico); 
-            //debo poner este return porque si no me da un error: 
-            //Cannot set headers after they are sent to the client
-            //no afecta al funcionamineto de la app pero ensucia el terminal
-            return;
-        }    
-    } 
-    res.status(403).json("Validacion incorrecta");
+    var sql = "SELECT idMedico, nombreMedico FROM medicos WHERE nombreUsuario='"+medicoActual.login+"' AND contrasenyaMedico='"+medicoActual.pass+"'";
+    connection.query(sql,  function(err, medico)  {
+        if(err){
+            console.log('Error en la obtencion de medicos: ', err);
+            res.status(403).json("Validacion incorrecta");
+        } else{
+            console.log("este es el medico: ", medico)
+            res.status(200).json(medico);
+
+        }
+    });
 });
 
 //MOSTRAR PACIENES POR ID DEL MEDICO
-app.get("/api/medico/:id/pacientes",(req,res)=>{
-    //recojo  el id del medico
-    //.params recoge el id de la url que le manda el main
-    var id=req.params.id;
-    var newPac=[];
-    for(var i=0; i<pacientes.length;i++){
-        if(pacientes[i].medicoID==id){
-            newPac.push(pacientes[i]);  
-        }
-    }
-    // console.log(newPac);
-    //le envio todos los pacientes asoaciado a ese medico
-    res.status(200).json(newPac);
+app.get("/api/medico/:id/pacientes",function(req,res){
+    var sql= "SELECT * FROM pacientes WHERE idMedicoPaciente = '"+req.params.id+"'";
+    connection.query(sql, (err, pacientes) => {
+        if(err){
+            console.log('Error en la obtencion de pacientes: ', err);
+        }else{
+            res.status(200).json(pacientes);
+            return;        
+        }   
+    });
 });
-
 //mostrar las muestras de un paciente 
 app.get("/api/paciente/:id/muestras",(req,res)=>{
-    var id=req.params.id;
-    var newMus=[];
-    for(var i=0; i<muestras.length;i++){
-        if(muestras[i].pacienteID==id){
-            newMus.push(muestras[i]);
-            //console.log(newMus);
-        }
-    }
-    res.status(200).json(newMus);
+    var sql= "SELECT * from muestras WHERE idPaciente_muestras = '"+req.params.id+"'";
+    connection.query(sql, (err, muestrasPaciente) => {
+        if(err){
+            console.log('Error en la obtencion de pacientes: ', err);
+        }else{
+            console.log("estas son las muestras: ", muestrasPaciente)
+            res.status(200).json(muestrasPaciente);
+        }   
+    })
 });
 
 //MOSTRAR DATOS PAC POR ID SIN COD ACCESO 
 app.get("/api/paciente/:id",(req,res)=>{
     //recojo el id de la url 
-    var id = req.params.id;
-    var datos=[];
-    for(var i=0;i<pacientes.length;i++){
-        if(pacientes[i].id==id){
-            //recojo las variables 
-            datos.push(pacientes[i].id);
-            datos.push(pacientes[i].nombre);
-            datos.push(pacientes[i].medicoID);
-            datos.push(pacientes[i].observaciones)
-            //console.log("Estos son los datos del paciente:",datos);
-            //las envio en formato json, lo que me permite no recoger el codigo de acceso 
-            res.status(200).json(datos);
-            return;
-        }
-    }
-    res.status(404).json("No existe paciente con ese id.");
+    var sql= "SELECT idPaciente, nombrePaciente, idMedicoPaciente, observacionesPaciente from pacientes WHERE idPaciente = '"+req.params.id+"'";
+    connection.query(sql, (err, paciente) => {
+        if(err){
+            console.log('Error en la obtencion de pacientes: ', err);
+            res.status(404).json("No existe paciente con ese id.");
+        }else{
+            console.log("este es el pac: ", paciente)
+            res.status(200).json(paciente);
+        }   
+    })
 });
-
-
-
 
 //MOSTRAR DATOS MEDICO POR ID SIN PASSWORD 
 app.get("/api/medico/:id",(req,res)=>{
     //recojo el id de la url 
-    var id = req.params.id;
-    for(var i=0;i< medicos.length;i++){
-        if(medicos[i].id==id){
-            //recojo las variables
-            idMed=medicos[i].id;
-            nombreMed=medicos[i].nombre;
-            logMed=medicos[i].login;
-            res.status(200).json({
-                idMed,
-                nombreMed,
-                logMed
-            });
-        }
-    }
-    res.status(404).json("No existen medicos con ese id"); 
+    var sql= "SELECT idMedico, nombreMedico, nombreUsuario from medicos WHERE idMedico = '"+req.params.id+"'";
+    connection.query(sql, (err, medico) => {
+        if(err){
+            console.log('Error en la obtencion del medico: ', err);
+            res.status(404).json("No existe medico con ese id.");
+        }else{
+            console.log("este es el medico: ", medico)
+            res.status(200).json(medico);
+        }   
+    })
 });
 
 //CREAR NUEVOS PACIENTES (agregarPacientes)
 app.post("/api/medico/:id/pacientes",(req,res)=>{
-    var idMedico= req.params.id;
-    console.log(idMedico);
-    var pacNuevo={
-        id: contadorPacientes,
-        nombre: req.body.nombreNuevoPaciente,
-        fecha_nacim: req.body.fechaNacimientoNuevoPaciente,
-        genero:req.body.generoNuevoPaciente,
-        medicoID: idMedico, 
-        codigo_acceso:req.body.codigoAccesoNuevoPaciente,
-        observaciones:req.body.obersvacionesNuevoPaciente
-    };
-    for(var i=0;i<medicos.length;i++){
-        if(medicos[i].id==idMedico){
-            pacientes.push(pacNuevo);
-            contadorPacientes++;
-            // console.log(pacActual);
+    var sql= "INSERT INTO pacientes (idPaciente, nombrePaciente, fechaNacimientoPaciente, idMedicoPaciente, codigoAccesoPaciente, observacionesPaciente, generoPaciente) VALUES ('NULL','"+req.body.nombreNuevoPaciente+"','"+req.body.fechaNacimientoNuevoPaciente+"','"+req.params.id+"','"+req.body.codigoAccesoNuevoPaciente+"','"+req.body.obersvacionesNuevoPaciente+"','"+req.body.generoNuevoPaciente+"')";
+    connection.query(sql, (err, paciente) => {
+        if(err){
+            console.log("No es posible crear el paciente.", err);
+            res.status(404).json("No es posible crear el paciente.");
+        }else{  
+            console.log("este es el paciente nuevo: ", paciente)
             res.status(201).json("paciente creado");
-        }
-    }
-    //console.log(pacientes);
+        }   
+    });
 });
 
 //ACTUALIZAR DATOS DE UN PACIENTE
 app.put("/api/paciente/:id",(req,res)=>{
-    var idActual = req.params.id;
-    for(var i=0;i< pacientes.length;i++){
-        if(pacientes[i].id==idActual){
-            pacientes[i].nombre = req.body.nombreNuevoPaciente;
-            pacientes[i].fecha_nacimiento = req.body.fechaNacimientoNuevoPaciente;
-            pacientes[i].genero = req.body.generoNuevoPaciente;
-            pacientes[i].codigo_acceso = req.body.codigoAccesoNuevoPaciente;
-            pacientes[i].observaciones = req.body.obersvacionesNuevoPaciente;
-            console.log("Nuevos datos del paciente: ",pacientes);
-            res.status(201).json('correcto');
-        }
-    }
-    res.status(201).json("Paciente no actualizado");
+    var sql= "UPDATE pacientes SET nombrePaciente= '"+req.body.nombreNuevoPaciente+"', fechaNacimientoPaciente='"+req.body.fechaNacimientoNuevoPaciente+"', codigoAccesoPaciente='"+req.body.codigoAccesoNuevoPaciente+"', observacionesPaciente ='"+req.body.obersvacionesNuevoPaciente+"', generoPaciente='"+req.body.generoNuevoPaciente+"' WHERE idPaciente = '"+req.params.id+"'";
+    connection.query(sql, (err, paciente) => {
+        if(err){
+            console.log("No es posible actualizar el paciente.", err);
+            res.status(204).json("Paciente no actualizado");
+        }else{  
+            //console.log("este es el paciente nuevo: ", paciente)
+            res.status(201).json("paciente actualizado");
+        }   
+    });
 });
-
-
 
 //Filtrar
 app.get("/api/paciente/:pacienteglobal/muestras/:listafiltrar",(req,res)=>{
-    //recojo el id de la url 
-    var muestrasFiltradas=[];
-    var pacienteglobal = req.params.pacienteglobal;
-    //listafiltrar=value de la lista de variables a filtrar
-    var listafiltrar = req.params.listafiltrar;
-    //console.log("ID del paciente seleccionado",pacienteglobal);
-    //console.log("Valor de la variable seleccionada",listafiltrar);
-    for(var i=0;i< muestras.length;i++){
-        if(muestras[i].variable==listafiltrar && muestras[i].pacienteID==pacienteglobal){
-            muestrasFiltradas.push(muestras[i])
-        }
-    }
-    //console.log(newMuestra);
-    res.status(200).json(muestrasFiltradas);
-    return;
-   
+    var sql="SELECT idMuestra, valorMuestra FROM muestras WHERE idPaciente_muestras='"+req.params.pacienteglobal+"' AND idVariable_muestras ='"+req.params.listafiltrar+"' ";
+    connection.query(sql, (err, muestras) => {
+        if(err){
+            console.log("No es posible encontrar las muestras", err);
+            res.status(204).json("Muestras no encontradas");
+        }else{  
+            console.log("estas son las muestras: ", muestras)
+            res.status(200).json(muestras);
+        }   
+    });
 });
 
-
-
-
-
-
-
+/*
 app.post("/api/paciente/:id/duplicar", function (req, res){
     //Obtener los datos del nuevo paciente
     var idPac=req.params.id;
@@ -234,7 +203,6 @@ app.post("/api/paciente/:id/duplicar", function (req, res){
     
 });
 
-
 let date = new Date();
 let output = String(date.getDate()).padStart(2, '0') + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + date.getFullYear();
 console.log(output);
@@ -258,8 +226,10 @@ function duplicarMuestrafunc(idValor){
     }
         
 }
-
+*/
 //////////////////////////////////////
+
+
 
 
 
@@ -397,7 +367,7 @@ app.register(eliminarMuestra);
 //funciones creadas por mi para la parte 3: 
 app.register(getAllMuestras);
 
-app.register(duplicarMuestrafunc);
+//app.register(duplicarMuestrafunc);
 
 
 function getAllMuestras(){
@@ -460,7 +430,7 @@ wsServer.on("request", function (request) {
     //le envio los pacientes para crear el select
 
     // recibir el mensaje que me envia el main
-    connection.on("message", function (message) { 
+    connection.on("message", function (message){ 
         // mensaje recibido del cliente
 		if (message.type === "utf8") {
 			//con msg recojo el mensaje que me envia el main y lo parseo 
@@ -482,7 +452,7 @@ wsServer.on("request", function (request) {
                         connection.sendUTF(JSON.stringify({operacion:"filtrarPacs",pacientesTodos:pacientes}));
                     }else{
                         connection.rolServer=msg.rol;
-                        connection.nombre=msg.nombre;
+                        //connection.nombre=msg.nombre;
                         connection.id=msg.id;
                         console.log("SOY UN:", connection.rolServer);
                         console.log("ID MEDICO:", connection.id);
@@ -507,12 +477,7 @@ wsServer.on("request", function (request) {
                                 //si el rol ser medico y si el id de la conexion es igual al id del medico del array de pacientes
                                 //envia la info 
                                 if(conexiones[i].rolServer=="medico" && conexiones[i].id==msg.idMedico){
-                                    //console.log("Esta es la muestra: ",msg.muestra);
-                                    // se pone msg.muestra.variable-1 porque el array busca por posicion y no por id 
-                                    // porque sé que el orden de id=1,2,3.... 
-                                    // si el envio la primera muestra con (msg.muestra.variable)
-                                    //me voy a la posicion 1 del array de variables que corresponde con metros
-                                    //por eso se le resta 1,para irme a peso
+        
                                     conexiones[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
                                     nombre:msg.nombre, variable:nombreMuestraGlobal}));
                                 }

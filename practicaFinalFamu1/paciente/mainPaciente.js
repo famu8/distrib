@@ -117,6 +117,116 @@ function mostrarMuestras(){
     });
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+class Animal{
+    static belly=[];
+    eat(){
+        Animal.belly.push("food");
+    }
+}
+
+
+let a = new Animal; 
+a.eat();
+
+console.log(Animal.belly[0])
+
+let animals=["jaguar","eagle"];
+animals.reverse();
+console.log(animals.pop())
+
+
+
+var v =1;
+var f1=function(){
+    console.log(v);
+}
+
+var f2= function(){
+    var v=2;
+    f1();
+}
+
+f2();
+
+
+
+var obj;
+console.log(obj);
+
+
+
+
+var sound="grunt";
+
+var bear ={sound:"roar"};
+
+function roar(){
+    console.log(this.sound);
+}
+roar.apply(bear);
+
+
+class X{
+    get Y(){
+        return 42;
+    }
+}
+var x=new X;
+
+
+class Rainforest{
+    static minimunRainFall=60
+;}
+
+
+let congo = new Rainforest();
+
+Rainforest.minimunRainFall=80;
+console.log(congo.minimunRainFall);
+
+
+
+let RainForestAcres=10;
+let animales=0;
+
+while(RainForestAcres<13 || animales<=2){
+    RainForestAcres++;
+    animales+=2;
+}
+console.log(animales);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function anyadirMuestras(){
     //recojo el id de la variable que quiero añadir y la fecha y valor
     var idvariableActual=document.getElementById("listaVariables").value;
@@ -240,13 +350,12 @@ function compartir(idMuestra){
     cambiarSeccion("divCompartir");
     //creamos el select
     createSelect();
-    
 }
 
 //Creo unc entinela para que los apcientes nos e doblen en el select
 //si centinale==false se crea de neuvo el select 
 //else: NO se crea de nuevo el select y NO se doblan los pacientes
-var centinela=false;
+
 function createSelect(){
     var select = "";
     select+="<optgroup label=NoAmigos>";
@@ -297,8 +406,7 @@ function openWs(){
                     +" realizó la actividad "+  msg.variable + " y obtuvo un valor de " +msg.muestra.valor;
                 alert(mensajeEmergente);      
                 break;
-        }
-        
+        }        
     });
 }
 
@@ -320,7 +428,7 @@ function enviar(){
         default://un paciente en concreto
             conexion.send(JSON.stringify({operacion: "enviar",
             valorSelect: selectValue, muestra:muestraACompartir, rol:"paciente",nombre:pacienteGlobal.nombre}));
-        break;
+            break;
         
     }
    //Dejo el formulario de envio del value vacio
