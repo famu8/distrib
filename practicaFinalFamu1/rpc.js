@@ -1,3 +1,6 @@
+// Librería RPC para el servidor
+// Versión 2.0 Soporta procedimientos asíncronos en el servidor
+
 const express = require("express");
 const cors = require("cors");
 
@@ -10,14 +13,28 @@ class RPCApp {
 		this.procedures = {};
 	}
 
-	register(name, fnct) {
-		if (typeof name === "function") { // register(fnct)
+	register(async, name, fnct) {
+		if (typeof async !== "boolean") {
+			fnct = name;
+			name = async;
+			async = false;
+		}
+		if (typeof name === "function") { // con una función nombrada
 			fnct = name;
 			name = fnct.name;
 		}
-		debug("register:", name);
-		this.procedures[name] = fnct;
+		debug("register:", name, "async:", async);
+		this.procedures[name] = { fnct, async };
 	}
+
+	registerSync(name, fnct) { // registro de función síncrona (return)
+		this.register(false, name, fnct)
+	}
+
+	registerAsync(name, fnct) { // registro de función asíncrona (con callback)
+		this.register(true, name, fnct);
+	}
+
 }
 
 class RPCServer {
@@ -45,13 +62,21 @@ class RPCServer {
 				res.status(404).json("No existe el procedimiento: " + procedureName);
 				return;
 			}
+
 			var params = req.body;
-			var result = procedure(...params);
 			debug("call:", appName + ": " + procedureName + "(", ...params, ")");
-			setTimeout(() => {
-				debug("response:", appName + ": " + procedureName + "(", ...params, ") -> ", result);
-				res.json(result);
-			}, module.exports.delay);
+			if (procedure.async) {
+				procedure.fnct(...params, end);
+			} else {
+				end(procedure.fnct(...params));
+			}
+
+			function end(result) {
+				setTimeout(() => {
+					debug("response:", appName + ": " + procedureName + "(", ...params, ") -> ", result);
+					res.json(result);
+				}, module.exports.delay);
+			}
 		});
 		app.listen(port, callback);
 	}
