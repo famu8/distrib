@@ -32,33 +32,26 @@ function salir(){
 
 
 
-
-
-
-
-
-
 //creo la conexion al webSocket fuera para hacerla global 
 //debo hacer esto porque si quiero que el ws no haga nada hasta que la funcion log in 
 //no se ejcute, debe de ser asi --> ver funcion openWs()
 //ademas debo de crear conexion como global para pdoer enviar mensjaes desde diferentes funciones 
 //al servidor
 var conexion ="";
+
 function logearAsincrono(){
     var codAcc= document.getElementById("codAcc").value;
     //console.log(codAcc);
     login(codAcc,function(pacienteActual){
-        //console.log(pacientes);
+        //console.log("Este Es el paciente que me llega del server: ",pacienteActual);
         if(pacienteActual!=null){
             //recojo los pacientes en la variable global
             pacienteGlobal=pacienteActual;
-            //console.log(pacientesGlobal);
-            //console.log("PACIENTE",pacientesGlobal);
             //recojo el id del medico y del paciente para futuras funciones
-            idMedicoGlobal=pacienteActual.medicoID;
-            //console.log(idMedico);
-            idPacienteGlobal=pacienteActual.id;
-            //console.log(idPaciente);
+            idMedicoGlobal=pacienteActual.idMedicoPaciente;
+            //console.log("id del medico global",idMedicoGlobal);
+            idPacienteGlobal=pacienteActual.idPaciente;
+            //console.log(idPacienteGlobal);
 
             //creo esta funcion para abrir el ws en el main y recoger los
             //Datos que me envia el server
@@ -79,9 +72,10 @@ function logearAsincrono(){
 
 function mostrarDatosMedico(){
     datosMedico(idMedicoGlobal, function(datosMed){
+        //console.log("este es el medico:", datosMed)
         if(datosMed!=null){
             var bienvenida=document.getElementById("bienvenida"); 
-            bienvenida.innerHTML = "Bienvenido/a al menú principal." +" ¡ "+ pacienteGlobal.nombre+" ! <br>" +"Tu medico es : " + datosMed[1] + "<br> Observaciones: " + pacienteGlobal.observaciones;
+            bienvenida.innerHTML = "Bienvenido/a al menú principal." +" ¡ "+ pacienteGlobal.nombrePaciente +" ! <br>" +"Tu medico es : " + datosMed.nombreMedico + "<br> Observaciones: " + pacienteGlobal.observacionesPaciente;
         }else{
             alert("El medico no existe");
         }
@@ -93,21 +87,21 @@ function mostrarMuestras(){
     var listaMuestras="";
     //console.log("Id del paciente que estamos viendo: ",idPaciente);
     listadoMuestras(idPacienteGlobal,function(muestraActual){
-        //console.log(muestraActual);
+        //console.log("meustra que me llega: ",muestraActual);
         var variableForm = document.getElementById("filtrar").value;
         //console.log("Esta es la variable elegida: ",variableForm);
         if(muestraActual!==null){  
             //se pone '0' porque es el valor asignado a 'Mostrar Todo' lo que hace es imprimir todas las muestras
             if(variableForm!=='0'){
                 for(var i=0; i< muestraActual.length;i++){
-                    if(variableForm==muestraActual[i].variable){
-                        listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button><button onclick='duplicarMuestra("+muestraActual[i].idMuestra+")'>Duplicar</button></li>";
+                    if(variableForm==muestraActual[i].idVariable_muestras){
+                        listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].idVariable_muestras+"-- Valor:  "+muestraActual[i].valorMuestra+"-- Fecha: "+muestraActual[i].fechaMuestra+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button><button onclick='duplicarMuestra("+muestraActual[i].idMuestra+")'>Duplicar</button></li>";
                     }
                 }
                 document.getElementById("listaMuestras").innerHTML=listaMuestras;
             }else{
                 for(var i=0; i<muestraActual.length;i++){
-                    listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].variable+"-- Valor:  "+muestraActual[i].valor+"-- Fecha: "+muestraActual[i].fecha+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button><button onclick='duplicarMuestra("+muestraActual[i].idMuestra+")'>Duplicar</button></li>";
+                    listaMuestras+="<li>"+ "Muestra: "+i+" --- "+ "ID: "+ muestraActual[i].idMuestra +"-- Variable: "+ muestraActual[i].idVariable_muestras+"-- Valor:  "+muestraActual[i].valorMuestra+"-- Fecha: "+muestraActual[i].fechaMuestra+  " <button onclick='eliminarMain(" + muestraActual[i].idMuestra + ")'>Eliminar</button> <button onclick='compartir("+muestraActual[i].idMuestra+")'>Compartir</button><button onclick='duplicarMuestra("+muestraActual[i].idMuestra+")'>Duplicar</button></li>";
                 }
                 document.getElementById("listaMuestras").innerHTML=listaMuestras;
             }
@@ -116,18 +110,6 @@ function mostrarMuestras(){
         }
     });
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 function anyadirMuestras(){
@@ -145,8 +127,8 @@ function anyadirMuestras(){
     if(idvariableActual=="" || nuevaMuestra.fecha=="" || nuevaMuestra.valor==""){
         alert("Selecciona un valor para cada campo");
     }else{
-        agregarMuestra(idPacienteGlobal, idvariableActual, nuevaMuestra.fecha, nuevaMuestra.valor, function(idMuestraGlobal){
-            if(idMuestraGlobal==0){
+        agregarMuestra(idPacienteGlobal, idvariableActual, nuevaMuestra.fecha, nuevaMuestra.valor, function(idNuevaMuestra){
+            if(idNuevaMuestra==false){
                 alert("No se ha podido añadir la muestra.");
                 document.getElementById("listaVariables").value="";
                 document.getElementById("fechaNuevaMuestra").value="";
@@ -197,7 +179,7 @@ function eliminarMain(idValor){
 
 
 
-
+/*
 function duplicarMuestra(idValor){
     duplicarMuestrafunc(idValor,function(id){
         if(id == -1){
@@ -208,7 +190,7 @@ function duplicarMuestra(idValor){
             mostrarMuestras();
         }
     });
-}
+}*/
 
 
 

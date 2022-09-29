@@ -273,82 +273,75 @@ app.listen(3000);
 //SERVIDOR RPC
 /////PARTE DEL CLIENTE (PACIENTE) //////
 var rpc = require("./rpc.js");
-var datos=require("./datos.js");
+rpc.debug = true;
 
-//id paciente global
-var idPacienteGlobal;
 //variable global para el id de las nuevas muestras
 //empieza en 8 porque ya tenemos  muestras creadas previamente
-var idMuestraGlobal=5000;
-var idMedicoGlobal;
 
 
-function login(codAcc){
-    for(var i=0; i < pacientes.length;i++){
-        if(codAcc==pacientes[i].codigo_acceso){
-            idMedicoGlobal=pacientes[i].medicoID;
-            //console.log("ID del medico actual: ", idMedicoGlobal);
-            idPacienteGlobal=pacientes[i].id;
-            return pacientes[i];
+function login(codAcc, callback){
+    connection.query("SELECT * FROM pacientes WHERE codigoAccesoPaciente = '"+codAcc+"' ", function (error, paciente) {
+        //console.log("paciente que me devuelve la bbdd:",paciente)
+        if (error) {
+            callback(null); // error en la consulta
+        }else {
+            let pacienteParse = JSON.parse(JSON.stringify(paciente))[0];
+            callback(pacienteParse);
         }
-    }
-    return null;
-}
-function datosMedico(idMedico){
-    var datosMed=[];
-    for(var i=0; i<medicos.length;i++){
-        //aqui antes era medicos[i].id==pacientes[i].medicoID
-        if(idMedico==pacientes[i].medicoID){
-            datosMed.push(medicos[i].id);
-            datosMed.push(medicos[i].nombre);
-            //console.log(datosMed);
-            return datosMed;
-        }
-    }
-    return null;
+    });
 }
 
 
-function listadoMuestras(idPaciente){
-    var muestraActual=[];
-    //console.log(idPaciente);
-    for(var i=0; i< muestras.length;i++){
-        if(muestras[i].pacienteID==idPaciente){
-            //console.log(muestras[i].pacienteID);
-            muestraActual.push(muestras[i]);
+function datosMedico(idMedico,callback){
+    var sql="SELECT * from medicos WHERE idMedico ='"+idMedico+"'";
+    connection.query(sql,function (error, medico) {
+        //console.log("medico que me devuelve la bbdd:",medico)
+        if (error) {
+            callback(null); 
+        }else {
+            let medicoParse = JSON.parse(JSON.stringify(medico))[0];
+            callback(medicoParse);       
         }
-    }
-    //console.log(muestraActual);
-    return muestraActual;
+    });
+}
+
+function listadoMuestras(idPaciente,callback){
+    var sql="SELECT * FROM muestras WHERE idPaciente_muestras='"+idPaciente+"'";
+    connection.query(sql,function (error, muestra) {
+        //console.log("muestras de ese pac:",muestra)
+        if (error) {
+            callback(null);
+        }else {
+            callback(muestra);       
+        }
+    });
 }
 
 
-function agregarMuestra(idPaciente, idVariable,fecha,valor){
-    //si me envian algo diferente devuelve 0
-    if(!idPaciente||!idVariable||!fecha||!valor){
-        return 0;
-    }else{
-        idMuestraGlobal++;
-        muestras.push({idMuestra:idMuestraGlobal,pacienteID:idPaciente,variable:idVariable,fecha:fecha,valor:valor});
-        //console.log("Estas son las muestras que hay: ",muestras);
-        return idMuestraGlobal;
-    }
+function agregarMuestra(idPaciente, idVariable,fecha,valor,callback){
+    console.log("Nuevas variables: ", idPaciente, idVariable,fecha,valor);
+        var sql="INSERT INTO muestras (idPaciente_muestras,idVariable_muestras,fechaMuestra,valorMuestra) VALUES ('"+idPaciente+"','"+idVariable+"','"+fecha+"', '"+valor+"')";
+        console.log(sql);
+        connection.query(sql,function (error,confirmacion) {
+            if(error){
+                callback(false);
+            }else {
+                callback(true);       
+            }
+        });
+    
 }
 
-function eliminarMuestra(idValor){
-    //console.log("idValor:",idValor);
-    for(var i=0; i<muestras.length;i++ ){
-        if(idValor==muestras[i].idMuestra){
-            muestras.splice(i,1);
-            //console.log(muestras);
-            //meustra borrada
-            return true;
+function eliminarMuestra(idValor,callback){
+    var sql = 'DELETE FROM muestras WHERE idMuestra="'+idValor+'"';
+    connection.query(sql, (error, resultado)=>{
+        if(error){
+            callback(false);
+        }else{ 
+            callback(true);
         }
-    }
-    //console.log(muestras);
-    //muetra no borrada
-    return false;
 
+    });
 }
 
 function listadoVariables(){
@@ -358,14 +351,14 @@ function listadoVariables(){
 var servidor = rpc.server();
 var app = servidor.createApp("MiGestionPacientes");
 
-app.register(listadoMuestras);
-app.register(listadoVariables);
-app.register(login);
-app.register(datosMedico);
-app.register(agregarMuestra);
-app.register(eliminarMuestra);
+app.registerAsync(listadoMuestras);
+app.registerAsync(listadoVariables);
+app.registerAsync(login);
+app.registerAsync(datosMedico);
+app.registerAsync(agregarMuestra);
+app.registerAsync(eliminarMuestra);
 //funciones creadas por mi para la parte 3: 
-app.register(getAllMuestras);
+app.registerAsync(getAllMuestras);
 
 //app.register(duplicarMuestrafunc);
 
@@ -396,7 +389,7 @@ function getAllMuestras(){
 
 
 
-
+/*
 
 //////////////////////////////////////////////////////
 ///////PARTE DEL WEBSOCKET////////////////////////////
@@ -526,7 +519,7 @@ wsServer.on("request", function (request) {
 
 
 
-
+*/
 
 
 
