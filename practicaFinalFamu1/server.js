@@ -74,7 +74,6 @@ app.post("/api/medico/login",(req,res)=>{
         } else{
             console.log("este es el medico: ", medico)
             res.status(200).json(medico);
-
         }
     });
 });
@@ -291,7 +290,6 @@ function login(codAcc, callback){
     });
 }
 
-
 function datosMedico(idMedico,callback){
     var sql="SELECT * from medicos WHERE idMedico ='"+idMedico+"'";
     connection.query(sql,function (error, medico) {
@@ -316,7 +314,6 @@ function listadoMuestras(idPaciente,callback){
         }
     });
 }
-
 
 function agregarMuestra(idPaciente, idVariable,fecha,valor,callback){
     //console.log("Nuevas variables: ", idPaciente, idVariable,fecha,valor);
@@ -358,14 +355,10 @@ app.registerAsync(datosMedico);
 app.registerAsync(agregarMuestra);
 app.registerAsync(eliminarMuestra);
 //funciones creadas por mi para la parte 3: 
-app.registerAsync(getAllMuestras);
 
 //app.register(duplicarMuestrafunc);
 
 
-function getAllMuestras(){
-    return muestras;
-}
 
 
 
@@ -377,9 +370,6 @@ function getAllMuestras(){
 
 
 
-
-
-/*
 
 
 //////////////////////////////////////////////////////
@@ -404,6 +394,8 @@ httpServer.listen(puerto, function () {
 //variables globales
 var conexionesWS = []; //array conexiones
 var nombreMuestraGlobal;
+var variablesGlobales=[];
+
 
 //.on es igual a addEventListener
 wsServer.on("request", function (request) {
@@ -420,6 +412,14 @@ wsServer.on("request", function (request) {
 			//con msg recojo el mensaje que me envia el main y lo parseo 
             //(le quito comillas)
             var msg = JSON.parse(message.utf8Data);
+            const sql = "SELECT * FROM variables";
+                    connection.query(sql, (error, variables)=>{
+                        if (error){
+                            console.log('Error en busqueda de variables');
+                        }else{
+                            variablesGlobales=variables;    
+                        }
+                    });
 
             //aginar un id a la conexion
 
@@ -429,11 +429,20 @@ wsServer.on("request", function (request) {
                     //console.log(msg);
                     if(msg.rol=="paciente"){
                         connectionWS.rolServer=msg.rol;
-                        connectionWS.id=msg.id;
-                        console.log("ID PACIENTE:", connectionWS.id);
-                        console.log("SOY UN:", connectionWS.rolServer);
+                        connectionWS.idMedico=msg.idMedico;
+                        connectionWS.idPaciente=msg.idPaciente;
+                        //console.log("ID PACIENTE:", connectionWS.id);
+                        //console.log("SOY UN:", connectionWS.rolServer);
                         //le asigno a esa conexion el rol de paciente
-                        connectionWS.sendUTF(JSON.stringify({operacion:"filtrarPacs",pacientesTodos:pacientes}));
+                        const sql = "SELECT * FROM pacientes WHERE idMedicoPaciente ='"+connectionWS.idMedico+"' AND idPaciente != '"+connectionWS.idPaciente+"' ";
+                        connection.query(sql, (error, pacientesAmigos)=>{
+                            if (error){
+                                console.log('Error en busqueda de pacientes');
+                            }else{
+                                pacientesAmigosGlobal=pacientesAmigos;
+                                connectionWS.sendUTF(JSON.stringify({operacion:"recibirAmigos",pacientesTodos:pacientesAmigos}));
+                            }
+                        });
                     }else{
                         connectionWS.rolServer=msg.rol;
                         //connection.nombre=msg.nombre;
@@ -446,14 +455,14 @@ wsServer.on("request", function (request) {
 					break;
 
 				case "enviar":
-                    console.log("Valor del select: ",msg.valorSelect);
-                    //For para obtener el nombre de la muestra
-                    for(var i=0;i<variables.length;i++){
-                        if(variables[i].id==msg.muestra.variable){
-                            nombreMuestraGlobal=variables[i].nombre;
+                    //console.log("Valor del select: ",msg.valorSelect);
+                    for(var i=0;i<variablesGlobales.length;i++){
+                        if(variablesGlobales[i].idVariables==msg.muestra.idVariable_muestras){
+                            nombreMuestraGlobal=variablesGlobales[i].nombreVariables;
                         }
                     }
-                    console.log("Nombre de la variable a compartir:",nombreMuestraGlobal);
+        
+                    //console.log("Nombre de la variable a compartir:",nombreMuestraGlobal);
                     if(msg.valorSelect<0){
                         //compartir con el medico
                         if(msg.valorSelect==-1){
@@ -461,7 +470,7 @@ wsServer.on("request", function (request) {
                                 //si el rol ser medico y si el id de la conexion es igual al id del medico del array de pacientes
                                 //envia la info 
                                 if(conexionesWS[i].rolServer=="medico" && conexionesWS[i].id==msg.idMedico){
-        
+                                    //console.log("esta es la muestras: ",msg.muestra)
                                     conexionesWS[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
                                     nombre:msg.nombre, variable:nombreMuestraGlobal}));
                                 }
@@ -487,7 +496,7 @@ wsServer.on("request", function (request) {
                             //si es distinto de el id de la conexion (para no enviarselo asi mismo)
                             //si la conexion[i].id == valor del select(el valro de cada selecet es el id de ese paciente)), le envio el mensjae
                             //&& conexiones[i].id!=connection.id (esto creo que no hace falta)
-                            if(conexionesWS[i].rolServer=="paciente" && conexionesWS[i].id==msg.valorSelect){
+                            if(conexionesWS[i].rolServer=="paciente" && conexionesWS[i].idPaciente==msg.valorSelect){
                                 conexionesWS[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
                                 nombre:msg.nombre, variable:nombreMuestraGlobal}));
                             }
@@ -507,7 +516,7 @@ wsServer.on("request", function (request) {
         console.log("Cliente desconectado. Ahora hay", conexionesWS.length);
     });  
 });
-*/
+
 
 
 

@@ -8,7 +8,6 @@ var datosMedico = app.procedure("datosMedico");
 var listadoMuestras = app.procedure("listadoMuestras");
 var agregarMuestra =app.procedure("agregarMuestra");
 var eliminarMuestra=app.procedure("eliminarMuestra");
-var getAllMuestras =app.procedure("getAllMuestras");
 var  duplicarMuestrafunc=app.procedure("duplicarMuestrafunc");
 
 //variables globales
@@ -16,6 +15,7 @@ var seccionActual = "login";
 var idMedicoGlobal;
 var idPacienteGlobal;
 var pacienteGlobal=[];
+var todasLasMuestras=[];
 
 //funcion para ir cambiando de pestañas
 function cambiarSeccion(seccion){   
@@ -82,11 +82,11 @@ function mostrarDatosMedico(){
     });
 }
 
-
 function mostrarMuestras(){
     var listaMuestras="";
     //console.log("Id del paciente que estamos viendo: ",idPaciente);
     listadoMuestras(idPacienteGlobal,function(muestraActual){
+        todasLasMuestras=muestraActual;
         //console.log("meustra que me llega: ",muestraActual);
         var variableForm = document.getElementById("filtrar").value;
         //console.log("Esta es la variable elegida: ",variableForm);
@@ -110,7 +110,6 @@ function mostrarMuestras(){
         }
     });
 }
-
 
 function anyadirMuestras(){
     //recojo el id de la variable que quiero añadir y la fecha y valor
@@ -216,20 +215,18 @@ var muestraACompartir=[];
 
 //funcion para filtrar la meustra que voy a compartir con los amigos
 function filtrarMuestra(idMuestra){
-    var allMuestras=[];
     var muestraFiltrada=[];
-    //recojo todas las muestras del servidor
-    allMuestras=getAllMuestras();
-    for(var i=0;i<allMuestras.length;i++){
-        if(idMuestra==allMuestras[i].idMuestra){
-            muestraFiltrada=allMuestras[i];
+    //console.log("estas son todas las meustras:",todasLasMuestras)
+    for(var i=0;i<todasLasMuestras.length;i++){
+        if(idMuestra==todasLasMuestras[i].idMuestra){
+            muestraFiltrada=todasLasMuestras[i];
         }
     }
     return muestraFiltrada;
 }
 
 function compartir(idMuestra){
-    console.log("Muestra con ID: ",idMuestra);
+    //console.log("Muestra con ID: ",idMuestra);
     muestraACompartir=filtrarMuestra(idMuestra);
     //console.log("Esta es la muestra que vas a compartir:",muestraACompartir);
     cambiarSeccion("divCompartir");
@@ -249,22 +246,10 @@ function createSelect(){
     select+="</optgroup>";
     select+="<optgroup label=Amigos>";
     for(var i = 0; i < pacsFiltrados.length; i++){
-        select+="<option id=" + pacsFiltrados[i].id +"  value="+pacsFiltrados[i].id+"> " + pacsFiltrados[i].nombre + "</option>";
+        select+="<option id=" + pacsFiltrados[i].idPaciente +"  value="+pacsFiltrados[i].idPaciente+"> " + pacsFiltrados[i].nombrePaciente + "</option>";
     }
     select.innerHTML+="</optgroup>";
     document.getElementById("formCompartir").innerHTML=select;
-}
-
-function filtrarPacs(idMedico,pacienteJSON){
-    var pacsFiltrados=[];
-    for(var i=0; i < pacienteJSON.length;i++){
-        //depues del && --> esto lo aho para NO PODER COMPARTIR la muestra el paciente consigo mismo
-        //NO mando el paciente que va a compartir (no lo mando asi mismo)
-        if(idMedico==pacienteJSON[i].medicoID && idPacienteGlobal!=pacienteJSON[i].id){
-            pacsFiltrados.push(pacienteJSON[i]);
-        }
-    }
-    return pacsFiltrados;
 }
 
 
@@ -276,19 +261,19 @@ function openWs(){
         console.log("SOY EL WEBSOCKET MAIN!!!");
         //le envio solo el rol de apciente porque desde este
         //Cliente solo entran pacientes
-        conexion.send(JSON.stringify({operacion:"login",rol:"paciente",id:idPacienteGlobal}));
+        conexion.send(JSON.stringify({operacion:"login",rol:"paciente",idMedico:idMedicoGlobal,idPaciente:idPacienteGlobal}));
     });
 
     //cuando recibo un mensaje, se ejecuta el callback
     conexion.addEventListener('message', function (event) {
         var msg=JSON.parse(event.data);
         switch(msg.operacion){
-            case "filtrarPacs":
-                pacsFiltrados=filtrarPacs(idMedicoGlobal,msg.pacientesTodos);
+            case "recibirAmigos":
+                pacsFiltrados=msg.pacientesTodos;
                 break;
             case "notificar":
-                var mensajeEmergente=msg.nombre+" ha compartido contigo que el día " + msg.muestra.fecha
-                    +" realizó la actividad "+  msg.variable + " y obtuvo un valor de " +msg.muestra.valor;
+                var mensajeEmergente=msg.nombre+" ha compartido contigo que el día " + msg.muestra.fechaMuestra
+                    +" realizó la actividad "+  msg.variable + " y obtuvo un valor de " +msg.muestra.valorMuestra;
                 alert(mensajeEmergente);      
                 break;
         }        
@@ -304,15 +289,15 @@ function enviar(){
         //le envio el nombre global del paciente para mostrarlo en el alert del medico
             conexion.send(JSON.stringify({operacion: "enviar",
                 valorSelect: selectValue, muestra:muestraACompartir,rol:"medico",
-                nombre:pacienteGlobal.nombre,idMedico:idMedicoGlobal}));
+                nombre:pacienteGlobal.nombrePaciente,idMedico:idMedicoGlobal}));
             break;
         case "-2": //todos
             conexion.send(JSON.stringify({operacion: "enviar",
-            valorSelect: selectValue, muestra:muestraACompartir, rol:"todos",nombre:pacienteGlobal.nombre}));
+            valorSelect: selectValue, muestra:muestraACompartir, rol:"todos",nombre:pacienteGlobal.nombrePaciente}));
             break;
         default://un paciente en concreto
             conexion.send(JSON.stringify({operacion: "enviar",
-            valorSelect: selectValue, muestra:muestraACompartir, rol:"paciente",nombre:pacienteGlobal.nombre}));
+            valorSelect: selectValue, muestra:muestraACompartir, rol:"paciente",nombre:pacienteGlobal.nombrePaciente}));
             break;
         
     }

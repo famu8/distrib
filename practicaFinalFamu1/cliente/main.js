@@ -249,8 +249,9 @@ function openWsMedico(){
         //console.log(msg);
         switch(msg.operacion){
             case "notificar":
-                var mensajeEmergente=msg.nombre+" ha compartido contigo que el día " + msg.muestra.fecha
-                    +" realizó la actividad "+  msg.variable + " y obtuvo un valor de " +msg.muestra.valor;
+                console.log(msg.operacion)
+                var mensajeEmergente=msg.nombre+" ha compartido contigo que el día " + msg.muestra.fechaMuestra
+                    +" realizó la actividad "+  msg.variable + " y obtuvo un valor de " +msg.muestra.valorMuestra;
                 alert(mensajeEmergente);      
                 break;
         }
