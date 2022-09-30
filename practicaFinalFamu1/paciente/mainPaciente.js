@@ -128,7 +128,7 @@ function anyadirMuestras(){
         alert("Selecciona un valor para cada campo");
     }else{
         agregarMuestra(idPacienteGlobal, idvariableActual, nuevaMuestra.fecha, nuevaMuestra.valor, function(idNuevaMuestra){
-            if(idNuevaMuestra==false){
+            if(idNuevaMuestra==0){
                 alert("No se ha podido añadir la muestra.");
                 document.getElementById("listaVariables").value="";
                 document.getElementById("fechaNuevaMuestra").value="";

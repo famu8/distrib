@@ -319,17 +319,17 @@ function listadoMuestras(idPaciente,callback){
 
 
 function agregarMuestra(idPaciente, idVariable,fecha,valor,callback){
-    console.log("Nuevas variables: ", idPaciente, idVariable,fecha,valor);
+    //console.log("Nuevas variables: ", idPaciente, idVariable,fecha,valor);
         var sql="INSERT INTO muestras (idPaciente_muestras,idVariable_muestras,fechaMuestra,valorMuestra) VALUES ('"+idPaciente+"','"+idVariable+"','"+fecha+"', '"+valor+"')";
-        console.log(sql);
         connection.query(sql,function (error,confirmacion) {
+            //console.log(confirmacion.insertId);
             if(error){
-                callback(false);
+                //Devuelvo 0 porque no se ha creado la muestra en la bbdd
+                callback(0);
             }else {
-                callback(true);       
+                callback(confirmacion.insertId);       
             }
         });
-    
 }
 
 function eliminarMuestra(idValor,callback){
@@ -379,17 +379,8 @@ function getAllMuestras(){
 
 
 
-
-
-
-
-
-
-
-
-
-
 /*
+
 
 //////////////////////////////////////////////////////
 ///////PARTE DEL WEBSOCKET////////////////////////////
@@ -411,19 +402,19 @@ httpServer.listen(puerto, function () {
 
 
 //variables globales
-var conexiones = []; //array conexiones
+var conexionesWS = []; //array conexiones
 var nombreMuestraGlobal;
 
 //.on es igual a addEventListener
 wsServer.on("request", function (request) {
     // aceptar conexión (necesario para empezar la comunicacion)
-    var connection = request.accept("pacientes", request.origin);
-    conexiones.push(connection); // guardar la conexión
-    console.log("Cliente conectado. Ahora hay", conexiones.length);
+    var connectionWS = request.accept("pacientes", request.origin);
+    conexionesWS.push(connectionWS); // guardar la conexión
+    console.log("Cliente conectado. Ahora hay", conexionesWS.length);
     //le envio los pacientes para crear el select
 
     // recibir el mensaje que me envia el main
-    connection.on("message", function (message){ 
+    connectionWS.on("message", function (message){ 
         // mensaje recibido del cliente
 		if (message.type === "utf8") {
 			//con msg recojo el mensaje que me envia el main y lo parseo 
@@ -437,18 +428,18 @@ wsServer.on("request", function (request) {
 				case "login":
                     //console.log(msg);
                     if(msg.rol=="paciente"){
-                        connection.rolServer=msg.rol;
-                        connection.id=msg.id;
-                        console.log("ID PACIENTE:", connection.id);
-                        console.log("SOY UN:", connection.rolServer);
+                        connectionWS.rolServer=msg.rol;
+                        connectionWS.id=msg.id;
+                        console.log("ID PACIENTE:", connectionWS.id);
+                        console.log("SOY UN:", connectionWS.rolServer);
                         //le asigno a esa conexion el rol de paciente
-                        connection.sendUTF(JSON.stringify({operacion:"filtrarPacs",pacientesTodos:pacientes}));
+                        connectionWS.sendUTF(JSON.stringify({operacion:"filtrarPacs",pacientesTodos:pacientes}));
                     }else{
-                        connection.rolServer=msg.rol;
+                        connectionWS.rolServer=msg.rol;
                         //connection.nombre=msg.nombre;
-                        connection.id=msg.id;
-                        console.log("SOY UN:", connection.rolServer);
-                        console.log("ID MEDICO:", connection.id);
+                        connectionWS.id=msg.id;
+                        console.log("SOY UN:", connectionWS.rolServer);
+                        console.log("ID MEDICO:", connectionWS.id);
                         //console.log("Me llamo: ", connection.nombre);
                         //le asigno a esa conexion el rol de medico
                     }
@@ -466,38 +457,38 @@ wsServer.on("request", function (request) {
                     if(msg.valorSelect<0){
                         //compartir con el medico
                         if(msg.valorSelect==-1){
-                            for(var i=0; i<conexiones.length;i++){
+                            for(var i=0; i<conexionesWS.length;i++){
                                 //si el rol ser medico y si el id de la conexion es igual al id del medico del array de pacientes
                                 //envia la info 
-                                if(conexiones[i].rolServer=="medico" && conexiones[i].id==msg.idMedico){
+                                if(conexionesWS[i].rolServer=="medico" && conexionesWS[i].id==msg.idMedico){
         
-                                    conexiones[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
+                                    conexionesWS[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
                                     nombre:msg.nombre, variable:nombreMuestraGlobal}));
                                 }
                             }
                         }else{
                             //Compartir con todos 
                             //console.log("Esta es la muestra: ",msg.muestra);
-                            for(var i=0;i<conexiones.length;i++){
+                            for(var i=0;i<conexionesWS.length;i++){
                                 //connection es la persona que ha hecho el login por eso si la conexion[i] es distinta
                                 //a  connection, le envio el mensaje, para que una persona NO se comparta asi misma
                                 //y le comparto a todas las personas ya demas de ello ponog que las conexinoes[i] sean 
                                 // distintas de medico para no enviarlo medicos y solo enviar a pacientes
-                                if(conexiones[i]!=connection && conexiones[i].rolServer!="medico"){
-                                    conexiones[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
+                                if(conexionesWS[i]!=connectionWS && conexionesWS[i].rolServer!="medico"){
+                                    conexionesWS[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
                                     nombre:msg.nombre, variable:nombreMuestraGlobal}));
                                 }
                             }
                         }
                     }else{
                         //compartir con un paciente en concreto
-                        for(var i=0; i<conexiones.length;i++){
+                        for(var i=0; i<conexionesWS.length;i++){
                             //si es == paciente
                             //si es distinto de el id de la conexion (para no enviarselo asi mismo)
                             //si la conexion[i].id == valor del select(el valro de cada selecet es el id de ese paciente)), le envio el mensjae
                             //&& conexiones[i].id!=connection.id (esto creo que no hace falta)
-                            if(conexiones[i].rolServer=="paciente" && conexiones[i].id==msg.valorSelect){
-                                conexiones[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
+                            if(conexionesWS[i].rolServer=="paciente" && conexionesWS[i].id==msg.valorSelect){
+                                conexionesWS[i].sendUTF(JSON.stringify({operacion:"notificar",muestra:msg.muestra, 
                                 nombre:msg.nombre, variable:nombreMuestraGlobal}));
                             }
                         }
@@ -511,15 +502,15 @@ wsServer.on("request", function (request) {
     
     //cuando el cliente se desconecte hace el callback que es borrar
     //del array de connexiones y mostrarlo por consola
-    connection.on("close", function (reasonCode, description) { // conexión cerrada
-        conexiones.splice(conexiones.indexOf(connection), 1);
-        console.log("Cliente desconectado. Ahora hay", conexiones.length);
+    connectionWS.on("close", function (reasonCode, description) { // conexión cerrada
+        conexionesWS.splice(conexionesWS.indexOf(connectionWS), 1);
+        console.log("Cliente desconectado. Ahora hay", conexionesWS.length);
     });  
 });
-
-
-
 */
+
+
+
 
 
 
