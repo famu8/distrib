@@ -8,7 +8,8 @@ var datosMedico = app.procedure("datosMedico");
 var listadoMuestras = app.procedure("listadoMuestras");
 var agregarMuestra =app.procedure("agregarMuestra");
 var eliminarMuestra=app.procedure("eliminarMuestra");
-var  duplicarMuestrafunc=app.procedure("duplicarMuestrafunc");
+var duplicarMuestrafunc=app.procedure("duplicarMuestrafunc");
+var buscarAlergia=app.procedure("buscarAlergia"); 
 
 //variables globales
 var seccionActual = "login";
@@ -75,7 +76,7 @@ function mostrarDatosMedico(){
         //console.log("este es el medico:", datosMed)
         if(datosMed!=null){
             var bienvenida=document.getElementById("bienvenida"); 
-            bienvenida.innerHTML = "Bienvenido/a al menú principal." +" ¡ "+ pacienteGlobal.nombrePaciente +" ! <br>" +"Tu medico es : " + datosMed.nombreMedico + "<br> Observaciones: " + pacienteGlobal.observacionesPaciente;
+            bienvenida.innerHTML = "Bienvenido/a al menú principal." +" ¡ "+ pacienteGlobal.nombrePaciente +" ! <br>" +"Tu medico es : " + datosMed.nombreMedico + "<br> Observaciones: " + pacienteGlobal.observacionesPaciente +"<br>Consulta aquí tus alergias: <button onclick='mostrarAlergia(" + idPacienteGlobal + ")'>Alergia</button> ";
         }else{
             alert("El medico no existe");
         }
@@ -160,7 +161,21 @@ function eliminarMain(idValor){
     });
 }
 
-
+//la clave ajena == indice 
+//la clave ajena sis e puede repetir, no se puede repetir la clave alternativa
+function mostrarAlergia(idPaciente){
+    buscarAlergia(idPaciente,function(respuesta){
+        if(respuesta==false){
+            alert("Error mostrando la alergia");
+        }else{
+            var alergia="";
+            for(var i=0; i<respuesta.length;i++){
+                alergia+="<li>"+respuesta[i].nombreAlergia+"</li>";
+            }
+            document.getElementById("alergia").innerHTML=alergia;
+        } 
+    });
+}
 
 
 
@@ -258,7 +273,7 @@ function openWs(){
     // Connection opened 
     //con esto le digo al server que estoy conectado
     conexion.addEventListener('open', function (event) {
-        console.log("SOY EL WEBSOCKET MAIN!!!");
+        //console.log("SOY EL WEBSOCKET MAIN!!!");
         //le envio solo el rol de apciente porque desde este
         //Cliente solo entran pacientes
         conexion.send(JSON.stringify({operacion:"login",rol:"paciente",idMedico:idMedicoGlobal,idPaciente:idPacienteGlobal}));

@@ -72,7 +72,7 @@ app.post("/api/medico/login",(req,res)=>{
             console.log('Error en la obtencion de medicos: ', err);
             res.status(403).json("Validacion incorrecta");
         } else{
-            console.log("este es el medico: ", medico)
+            //console.log("este es el medico: ", medico)
             res.status(200).json(medico);
         }
     });
@@ -175,32 +175,53 @@ app.get("/api/paciente/:pacienteglobal/muestras/:listafiltrar",(req,res)=>{
     });
 });
 
-/*
+
+
+/////////////////////////////////////////////////////////////////////
+
+
+//de aqui para abajo implementaciones propias
+var contador=150;
+//como el codigoAccesoPaciente es clave alternativa y no se duplicar, 
+//creo una variable que se incremetara como codigo de acceso apra el paciente duplicado 
 app.post("/api/paciente/:id/duplicar", function (req, res){
+    var contadorCodigoAcceso="code"+contador+"";
+    console.log(contadorCodigoAcceso);
     //Obtener los datos del nuevo paciente
     var idPac=req.params.id;
-    var paciente;
-    for (let i = 0; i < pacientes.length; i++) {
-        if (pacientes[i].id == idPac) {
-            paciente = pacientes[i];  
-        } 
-    }
-    var nuevoPaciente =  {   
-        id: contadorPacientes, 
-        nombre: paciente.nombre, 
-        fecha_nacimiento: paciente.fecha_nacim, 
-        genero: paciente.genero, 
-        medicoID: paciente.medicoID, 
-        codigo_acceso: paciente.codigo_acceso, 
-        observaciones: paciente.observaciones
-    };
-    console.log("nuevo pac:",nuevoPaciente);//Visualizar nuevo paciente
-    pacientes.push(nuevoPaciente);//Incluir en array de pacientes
-    res.status(200).json(nuevoPaciente.id);//Se envia el nuevo paciente creado
-    console.log(pacientes);
-    console.log("Paciente duplicado!");
-    
+    //console.log("ID del paciente a duplicar: ", idPac);
+    var sql="INSERT INTO pacientes (nombrePaciente,fechaNacimientoPaciente,idMedicoPaciente,codigoAccesoPaciente,observacionesPaciente,generoPaciente) SELECT nombrePaciente,fechaNacimientoPaciente,idMedicoPaciente,'"+contadorCodigoAcceso+"',observacionesPaciente,generoPaciente FROM pacientes WHERE idPaciente ='"+idPac+"' ";
+    connection.query(sql, (err, paciente) => {
+        if(err){
+            //console.log("No es posible encontrar ese paciente", err);
+            res.status(204).json("Paciente no duplicado");
+        }else{  
+            contador++;
+            //console.log("Paciente duplicado:", paciente);
+            res.status(200).json("todo ok");
+        }   
+    });
 });
+
+app.delete("/api/paciente/:id/eliminar",function(req,res){
+    var idPac=req.params.id;
+    console.log("Id del paciente a eliminar: ",idPac);
+    var sql="DELETE FROM pacientes WHERE idPaciente='"+idPac+"'";
+    connection.query(sql, (err, paciente) => {
+        if(err){
+            res.status(204);
+        }else{  
+            res.status(200);
+        }   
+    });
+
+});
+
+
+
+
+
+/*
 
 let date = new Date();
 let output = String(date.getDate()).padStart(2, '0') + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + date.getFullYear();
@@ -337,13 +358,25 @@ function eliminarMuestra(idValor,callback){
         }else{ 
             callback(true);
         }
-
     });
 }
 
 function listadoVariables(){
     return variables;
 }
+
+function buscarAlergia(idPaciente, callback){
+    var sql = "SELECT nombreAlergia FROM alergias WHERE idPaciente_alergia ='"+idPaciente+"'";
+    connection.query(sql, (error, resultado)=>{
+        if(error){
+            callback(false);
+        }else{ 
+            console.log("nombre de la alergia",resultado);
+            callback(resultado);
+        }
+    });
+}
+
 
 var servidor = rpc.server();
 var app = servidor.createApp("MiGestionPacientes");
@@ -354,6 +387,7 @@ app.registerAsync(login);
 app.registerAsync(datosMedico);
 app.registerAsync(agregarMuestra);
 app.registerAsync(eliminarMuestra);
+app.registerAsync(buscarAlergia);
 //funciones creadas por mi para la parte 3: 
 
 //app.register(duplicarMuestrafunc);
@@ -447,8 +481,8 @@ wsServer.on("request", function (request) {
                         connectionWS.rolServer=msg.rol;
                         //connection.nombre=msg.nombre;
                         connectionWS.id=msg.id;
-                        console.log("SOY UN:", connectionWS.rolServer);
-                        console.log("ID MEDICO:", connectionWS.id);
+                        //console.log("SOY UN:", connectionWS.rolServer);
+                        //console.log("ID MEDICO:", connectionWS.id);
                         //console.log("Me llamo: ", connection.nombre);
                         //le asigno a esa conexion el rol de medico
                     }

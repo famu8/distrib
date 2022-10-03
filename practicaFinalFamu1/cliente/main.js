@@ -49,6 +49,7 @@ function controlarAcceso(){
             let medicoParseado = JSON.parse(JSON.stringify(envioMedico))[0];
             //console.log("con parse",medicoParseado);
             idMedicoGlobal=medicoParseado.idMedico;
+            console.log("Id medico lgobal:", idMedicoGlobal);
             openWsMedico();
             cambiarSeccion("listado");
             var welcome= document.getElementById("bienvenida");
@@ -75,7 +76,7 @@ function mostrarPacientes(id){
         var lista = document.getElementById("pacientes");
         lista.innerHTML = "";  
         for (var i = 0; i < newPac.length; i++) {
-            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].idPaciente + " - " + newPac[i].nombrePaciente + " - Fecha de Nacimiento:  " + newPac[i].fechaNacimientoPaciente+ " - Género: " + newPac[i].generoPaciente + " - ID del Médico: "+ newPac[i].idMedicoPaciente + " - Código acceso: "+ newPac[i].codigoAccesoPaciente + " - Observaciones: "+ newPac[i].observacionesPaciente + "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].idPaciente+')"> Consultar </button>'+ " " + '<button type="submit" onclick="duplicar('+newPac[i].idPaciente+')"> Duplicar </button>' + "</li><br>";
+            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].idPaciente + " - " + newPac[i].nombrePaciente + " - Fecha de Nacimiento:  " + newPac[i].fechaNacimientoPaciente+ " - Género: " + newPac[i].generoPaciente + " - ID del Médico: "+ newPac[i].idMedicoPaciente + " - Código acceso: "+ newPac[i].codigoAccesoPaciente + " - Observaciones: "+ newPac[i].observacionesPaciente + "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].idPaciente+')"> Consultar </button>'+ " " + '<button type="submit" onclick="duplicar('+newPac[i].idPaciente+')"> Duplicar </button>'+" "+ '<button type="submit" onclick="eliminarPaciente('+newPac[i].idPaciente+')"> Eliminar </button>'+"</li><br>";
         }
     });
 }
@@ -218,10 +219,9 @@ function Filtrar(){
 
 }
 
-/*
+
 function duplicar(idPac){
     rest.post("/api/paciente/"+idPac+"/duplicar",function(estado,respuesta){
-        console.log("estoy aqui");
         if(estado==200){
             cambiarSeccion("listado");
             mostrarPacientes(idMedicoGlobal);
@@ -229,7 +229,23 @@ function duplicar(idPac){
             alert("error no se ha duplicado el apciente");
         }
     });
-}*/
+}
+
+function eliminarPaciente(idPac){
+    rest.delete("/api/paciente/"+idPac+"/eliminar"),function(estado,repsuesta){
+        console.log("fajfkjadfadsf")
+        if(estado==200){
+            cambiarSeccion("listado");
+            mostrarPacientes(idMedicoGlobal);
+        }else{
+            alert("error no se ha borrado el paciente");
+        }
+    };
+}
+
+
+
+
 
 
 
@@ -240,7 +256,7 @@ function openWsMedico(){
     conexion = new WebSocket('ws://localhost:4444', "pacientes");
     //con esto le digo al server que estoy conectado
     conexion.addEventListener('open', function (event) {
-        console.log("SOY EL WEBSOCKET MEDICO!!!");
+        //console.log("SOY EL WEBSOCKET MEDICO!!!");
         conexion.send(JSON.stringify({operacion:"login",rol:"medico",id:idMedicoGlobal}));
     }); // Connection opened 
 
