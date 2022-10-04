@@ -75,7 +75,7 @@ function mostrarPacientes(id){
         var lista = document.getElementById("pacientes");
         lista.innerHTML = "";  
         for (var i = 0; i < newPac.length; i++) {
-            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].idPaciente + " - " + newPac[i].nombrePaciente + " - Fecha de Nacimiento:  " + newPac[i].fechaNacimientoPaciente+ " - Género: " + newPac[i].generoPaciente + " - ID del Médico: "+ newPac[i].idMedicoPaciente + " - Código acceso: "+ newPac[i].codigoAccesoPaciente + " - Observaciones: "+ newPac[i].observacionesPaciente + "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].idPaciente+')"> Consultar </button>'+ " " + '<button type="submit" onclick="duplicar('+newPac[i].idPaciente+')"> Duplicar </button>' + "</li><br>";
+            lista.innerHTML += "<li>" + "Paciente"+ " " + (i+1) +":   ID: " + newPac[i].idPaciente + " - " + newPac[i].nombrePaciente + " - Fecha de Nacimiento:  " + newPac[i].fechaNacimientoPaciente+ " - Género: " + newPac[i].generoPaciente + " - ID del Médico: "+ newPac[i].idMedicoPaciente + " - Código acceso: "+ newPac[i].codigoAccesoPaciente + " - Observaciones: "+ newPac[i].observacionesPaciente + "  "+ " - " + '<button type="submit" onclick="imprimirVariablesPaciente('+newPac[i].idPaciente+')"> Consultar </button>'+"</li><br>";
         }
     });
 }
