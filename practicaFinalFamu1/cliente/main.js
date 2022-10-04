@@ -218,6 +218,9 @@ function Filtrar(){
 
 }
 
+
+
+
 /*
 function duplicar(idPac){
     rest.post("/api/paciente/"+idPac+"/duplicar",function(estado,respuesta){

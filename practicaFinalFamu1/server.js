@@ -175,6 +175,33 @@ app.get("/api/paciente/:pacienteglobal/muestras/:listafiltrar",(req,res)=>{
     });
 });
 
+
+//si hicieramos una funcion en el main, pasariamos como parametro a la ruta 
+//rest el id del hospital al que pertenece ese medico (la podriamos guardar como vairable gloal)
+//y tambien pasamos en la ruta el id del medico, al igual que hemos hecho en la practica, mandamos 
+//el id global del medico
+
+app.put("/api/hospitales/:idHospital/medico/:id",(req,res)=>{
+    var idMedico=req.params.id;
+    var idHospital=req.params.idHospital;
+    console.log("id del hospital a cambiar:", idHospital);
+    console.log("id del medico a cambiar de hospital:", idMedico);
+    var sql= "UPDATE hospitales SET directorHospital= '"+idMedico+"' WHERE idHospital='"+idHospital+"' ";
+    connection.query(sql, (err, respuesta) => {
+        if(err){
+            console.log("No es posible encontrar las muestras", err);
+        }else{  
+            console.log("Cambio el hospital ahora tieene otro director");
+        }   
+    });
+});
+
+
+
+
+
+
+
 /*
 app.post("/api/paciente/:id/duplicar", function (req, res){
     //Obtener los datos del nuevo paciente
@@ -227,6 +254,11 @@ function duplicarMuestrafunc(idValor){
 }
 */
 //////////////////////////////////////
+
+
+
+
+
 
 
 
@@ -376,6 +408,7 @@ app.registerAsync(eliminarMuestra);
 ///////PARTE DEL WEBSOCKET////////////////////////////
 // Crear un servidor HTTP
 var http = require("http");
+const { restart } = require("nodemon");
 var httpServer = http.createServer();
 //Creo el sevidor ws
 var WebSocketServer= require("websocket").server; 
