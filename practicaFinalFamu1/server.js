@@ -371,7 +371,7 @@ function buscarAlergia(idPaciente, callback){
         if(error){
             callback(false);
         }else{ 
-            console.log("nombre de la alergia",resultado);
+            //console.log("nombre de la alergia",resultado);
             callback(resultado);
         }
     });
